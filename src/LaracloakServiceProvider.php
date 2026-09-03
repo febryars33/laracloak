@@ -28,7 +28,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/laracloak.php',
+            __DIR__.'/../config/laracloak.php',
             'laracloak',
         );
 
@@ -46,7 +46,7 @@ final class LaracloakServiceProvider extends ServiceProvider
         $this->provider();
 
         Authenticate::redirectUsing(
-            fn() => route('laracloak.login'),
+            fn () => route('laracloak.login'),
         );
     }
 
@@ -66,7 +66,7 @@ final class LaracloakServiceProvider extends ServiceProvider
                 Revocation::class,
                 State::class,
                 Pkce::class,
-                Oidc::class
+                Oidc::class,
             ] as $service
         ) {
             $this->app->singleton($service);
@@ -79,8 +79,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     private function publish(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/laracloak.php'
-            => config_path('laracloak.php'),
+            __DIR__.'/../config/laracloak.php' => config_path('laracloak.php'),
         ], 'laracloak-config');
     }
 
@@ -90,7 +89,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     private function routes(): void
     {
         $this->loadRoutesFrom(
-            __DIR__ . '/../routes/web.php',
+            __DIR__.'/../routes/web.php',
         );
     }
 

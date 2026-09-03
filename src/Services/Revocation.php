@@ -31,6 +31,6 @@ final class Revocation
 
     private function key(string $subject): string
     {
-        return 'laracloak.logout.' . sha1($subject);
+        return 'laracloak.logout.'.sha1($subject);
     }
 }

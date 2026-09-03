@@ -7,7 +7,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Support\Arrayable;
 use JsonSerializable;
 
-final class User implements Authenticatable, JsonSerializable, Arrayable, ArrayAccess
+final class User implements Arrayable, ArrayAccess, Authenticatable, JsonSerializable
 {
     public function __construct(
         private array $attributes,

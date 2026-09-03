@@ -5,7 +5,6 @@ namespace Snairbef\Laracloak\Auth;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Snairbef\Laracloak\Services\Identity;
-use Snairbef\Laracloak\Services\Oidc;
 
 final class Provider implements UserProvider
 {

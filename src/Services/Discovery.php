@@ -22,7 +22,7 @@ final class Discovery
                     3600,
                 ),
             ),
-            fn(): array => $this->fetch(),
+            fn (): array => $this->fetch(),
         );
 
         if ($key === null) {
@@ -71,7 +71,7 @@ final class Discovery
         }
 
         $response = $this->client->get(
-            $issuer . '/.well-known/openid-configuration',
+            $issuer.'/.well-known/openid-configuration',
         );
 
         $document = $response->json();
@@ -87,7 +87,7 @@ final class Discovery
 
     private function key(): string
     {
-        return 'laracloak.discovery.' . sha1(
+        return 'laracloak.discovery.'.sha1(
             (string) config('laracloak.issuer'),
         );
     }

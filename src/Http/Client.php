@@ -31,7 +31,7 @@ final class Client
 
         return $this->request()
             ->get($url)
-            ->throw(fn(Response $response) => OidcException::http($response));
+            ->throw(fn (Response $response) => OidcException::http($response));
     }
 
     /**
@@ -44,7 +44,7 @@ final class Client
         return $this->request()
             ->withToken($token)
             ->get($url)
-            ->throw(fn(Response $response) => OidcException::http($response));
+            ->throw(fn (Response $response) => OidcException::http($response));
     }
 
     /**
@@ -59,7 +59,7 @@ final class Client
         return $this->request()
             ->asForm()
             ->post($url, $data)
-            ->throw(fn(Response $response) => OidcException::http($response));
+            ->throw(fn (Response $response) => OidcException::http($response));
     }
 
     /**

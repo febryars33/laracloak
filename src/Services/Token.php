@@ -216,8 +216,8 @@ final class Token
 
     private function lock(): string
     {
-        return 'laracloak.token.' . sha1(
-            $this->id() . '|' . $this->session->getId(),
+        return 'laracloak.token.'.sha1(
+            $this->id().'|'.$this->session->getId(),
         );
     }
 

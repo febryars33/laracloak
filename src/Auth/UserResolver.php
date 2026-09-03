@@ -2,6 +2,7 @@
 
 namespace Snairbef\Laracloak\Auth;
 
+use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -37,7 +38,7 @@ final class UserResolver
     {
         $model = config(
             'laracloak.user.model',
-            \App\Models\User::class,
+            User::class,
         );
 
         if (
@@ -72,7 +73,7 @@ final class UserResolver
         string $model,
         array $attributes,
     ): Model&Authenticatable {
-        $user = new $model();
+        $user = new $model;
 
         $user->forceFill(
             $this->attributes($attributes),
@@ -89,6 +90,6 @@ final class UserResolver
             'sub' => $attributes['sub'] ?? null,
             'name' => $attributes['name'] ?? null,
             'email' => $attributes['email'] ?? null,
-        ], static fn(mixed $value): bool => $value !== null);
+        ], static fn (mixed $value): bool => $value !== null);
     }
 }

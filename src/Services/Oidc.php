@@ -65,8 +65,8 @@ final class Oidc
 
         return redirect()->away(
             $this->discovery->get('authorization_endpoint')
-                . '?'
-                . $query,
+                .'?'
+                .$query,
         );
     }
 
@@ -419,8 +419,8 @@ final class Oidc
         $query['client_id'] = $this->client();
 
         return $endpoint
-            . (str_contains($endpoint, '?') ? '&' : '?')
-            . http_build_query(
+            .(str_contains($endpoint, '?') ? '&' : '?')
+            .http_build_query(
                 $query,
                 '',
                 '&',
@@ -480,8 +480,7 @@ final class Oidc
             ' ',
             array_filter(
                 array_map(
-                    static fn(mixed $scope): string =>
-                    is_string($scope)
+                    static fn (mixed $scope): string => is_string($scope)
                         ? trim($scope)
                         : '',
                     $scopes,
