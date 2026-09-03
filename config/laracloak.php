@@ -1,8 +1,6 @@
 <?php
 
-// use App\Models\User;
-
-use Snairbef\Laracloak\Models\User;
+use App\Models\User;
 
 return [
 
