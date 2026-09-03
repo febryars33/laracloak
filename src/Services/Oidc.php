@@ -73,8 +73,8 @@ final class Oidc implements Contract
 
         return redirect()->away(
             $this->discovery->get('authorization_endpoint')
-                . '?'
-                . $query,
+                .'?'
+                .$query,
         );
     }
 
@@ -439,8 +439,8 @@ final class Oidc implements Contract
         $query['client_id'] = $this->client();
 
         return $endpoint
-            . (str_contains($endpoint, '?') ? '&' : '?')
-            . http_build_query(
+            .(str_contains($endpoint, '?') ? '&' : '?')
+            .http_build_query(
                 $query,
                 '',
                 '&',
@@ -500,7 +500,7 @@ final class Oidc implements Contract
             ' ',
             array_filter(
                 array_map(
-                    static fn(mixed $scope): string => is_string($scope)
+                    static fn (mixed $scope): string => is_string($scope)
                         ? trim($scope)
                         : '',
                     $scopes,

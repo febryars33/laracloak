@@ -17,10 +17,9 @@ class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName): string =>
-            'Snairbef\\Laracloak\\Database\\Factories\\'
-                . class_basename($modelName)
-                . 'Factory',
+            fn (string $modelName): string => 'Snairbef\\Laracloak\\Database\\Factories\\'
+                .class_basename($modelName)
+                .'Factory',
         );
 
         $this->database();
@@ -37,7 +36,7 @@ class TestCase extends Orchestra
     {
         config()->set(
             'app.key',
-            'base64:' . base64_encode(
+            'base64:'.base64_encode(
                 str_repeat('x', 32),
             ),
         );

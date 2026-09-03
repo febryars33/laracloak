@@ -22,14 +22,11 @@ function tokenSession(): Store
 
 it('exchanges an authorization code', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
-            'token_endpoint' =>
-            'http://localhost:8000/oauth/token',
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
+            'token_endpoint' => 'http://localhost:8000/oauth/token',
         ]),
 
-        'http://localhost:8000/oauth/token' =>
-        Http::response([
+        'http://localhost:8000/oauth/token' => Http::response([
             'access_token' => 'access-token',
             'refresh_token' => 'refresh-token',
             'expires_in' => 3600,
@@ -56,14 +53,11 @@ it('exchanges an authorization code', function () {
 
 it('refreshes a token', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
-            'token_endpoint' =>
-            'http://localhost:8000/oauth/token',
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
+            'token_endpoint' => 'http://localhost:8000/oauth/token',
         ]),
 
-        'http://localhost:8000/oauth/token' =>
-        Http::response([
+        'http://localhost:8000/oauth/token' => Http::response([
             'access_token' => 'new-access-token',
             'expires_in' => 3600,
         ]),
@@ -143,14 +137,11 @@ it('rejects a missing access token', function () {
 
 it('rejects refresh responses without an access token', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
-            'token_endpoint' =>
-            'http://localhost:8000/oauth/token',
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
+            'token_endpoint' => 'http://localhost:8000/oauth/token',
         ]),
 
-        'http://localhost:8000/oauth/token' =>
-        Http::response([
+        'http://localhost:8000/oauth/token' => Http::response([
             'expires_in' => 3600,
         ]),
     ]);

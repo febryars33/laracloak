@@ -4,6 +4,7 @@ use Illuminate\Session\ArraySessionHandler;
 use Illuminate\Session\Store;
 use Snairbef\Laracloak\Contracts\Token;
 use Snairbef\Laracloak\Contracts\Userinfo;
+use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Services\Identity;
 
 function identitySession(): Store
@@ -163,6 +164,6 @@ it('rejects subject changes during synchronization', function () {
 
     $identity->get();
 })->throws(
-    \Snairbef\Laracloak\Exceptions\OidcException::class,
+    OidcException::class,
     'OIDC subject mismatch.',
 );

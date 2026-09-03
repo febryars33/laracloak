@@ -93,6 +93,6 @@ final class UserResolver implements Contract
             'sub' => $attributes['sub'] ?? null,
             'name' => $attributes['name'] ?? null,
             'email' => $attributes['email'] ?? null,
-        ], static fn(mixed $value): bool => $value !== null);
+        ], static fn (mixed $value): bool => $value !== null);
     }
 }

@@ -34,6 +34,6 @@ final class Revocation implements Contract
 
     private function key(string $subject): string
     {
-        return 'laracloak.logout.' . sha1($subject);
+        return 'laracloak.logout.'.sha1($subject);
     }
 }

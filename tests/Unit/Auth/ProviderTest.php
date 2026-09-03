@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Snairbef\Laracloak\Auth\Provider;
 use Snairbef\Laracloak\Contracts\Identity;
 
@@ -86,7 +87,7 @@ it('does not validate credentials', function () {
     expect(
         $provider->validateCredentials(
             Mockery::mock(
-                \Illuminate\Contracts\Auth\Authenticatable::class,
+                Authenticatable::class,
             ),
             [],
         ),

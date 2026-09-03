@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Snairbef\Laracloak\Exceptions\OidcException;
-use Snairbef\Laracloak\Http\Client;
 use Snairbef\Laracloak\Services\Discovery;
 
 beforeEach(function () {
@@ -12,11 +11,9 @@ beforeEach(function () {
 
 it('loads OIDC discovery metadata', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
-            'authorization_endpoint' =>
-            'http://localhost:8000/oauth/authorize',
+            'authorization_endpoint' => 'http://localhost:8000/oauth/authorize',
         ]),
     ]);
 
@@ -30,11 +27,9 @@ it('loads OIDC discovery metadata', function () {
 
 it('returns a specific discovery field', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
-            'userinfo_endpoint' =>
-            'http://localhost:8000/oauth/userinfo',
+            'userinfo_endpoint' => 'http://localhost:8000/oauth/userinfo',
         ]),
     ]);
 
@@ -46,8 +41,7 @@ it('returns a specific discovery field', function () {
 
 it('caches discovery metadata', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
         ]),
     ]);
@@ -62,8 +56,7 @@ it('caches discovery metadata', function () {
 
 it('throws when a discovery field is missing', function () {
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
         ]),
     ]);

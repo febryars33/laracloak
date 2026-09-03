@@ -25,7 +25,7 @@ final class Discovery implements Contract
                     3600,
                 ),
             ),
-            fn(): array => $this->fetch(),
+            fn (): array => $this->fetch(),
         );
 
         if ($key === null) {
@@ -74,7 +74,7 @@ final class Discovery implements Contract
         }
 
         $response = $this->client->get(
-            $issuer . '/.well-known/openid-configuration',
+            $issuer.'/.well-known/openid-configuration',
         );
 
         $document = $response->json();
@@ -90,7 +90,7 @@ final class Discovery implements Contract
 
     private function key(): string
     {
-        return 'laracloak.discovery.' . sha1(
+        return 'laracloak.discovery.'.sha1(
             (string) config('laracloak.issuer'),
         );
     }

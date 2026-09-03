@@ -12,21 +12,19 @@ beforeEach(function (): void {
     Cache::flush();
 
     Http::fake([
-        'http://localhost:8000/.well-known/openid-configuration' =>
-        Http::response([
+        'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
             'jwks_uri' => 'http://localhost:8000/oauth/jwks',
         ]),
 
-        'http://localhost:8000/oauth/jwks' =>
-        Http::response(jwtJwks()),
+        'http://localhost:8000/oauth/jwks' => Http::response(jwtJwks()),
     ]);
 });
 
 function jwtPrivateKey(): string
 {
     return file_get_contents(
-        __DIR__ . '/../../Fixtures/keys/private.pem',
+        __DIR__.'/../../Fixtures/keys/private.pem',
     );
 }
 
@@ -127,7 +125,7 @@ it('rejects a token signed by another key', function (): void {
     );
 
     expect(
-        fn() => app(Jwt::class)->validate($token),
+        fn () => app(Jwt::class)->validate($token),
     )->toThrow(
         OidcException::class,
     );

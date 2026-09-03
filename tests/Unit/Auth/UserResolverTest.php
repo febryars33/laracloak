@@ -1,8 +1,6 @@
 <?php
 
-use Illuminate\Database\Eloquent\Model;
 use Snairbef\Laracloak\Auth\UserResolver;
-use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Tests\Fixtures\User;
 
 beforeEach(function () {
