@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Auth;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
-use Snairbef\Laracloak\Services\Identity;
+use Snairbef\Laracloak\Contracts\Identity;
+use Snairbef\Laracloak\Models\User;
 
 final class Provider implements UserProvider
 {

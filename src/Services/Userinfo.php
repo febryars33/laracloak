@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
+use Snairbef\Laracloak\Contracts\Userinfo as Contract;
 use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Http\Client;
 
-final class Userinfo
+final class Userinfo implements Contract
 {
     public function __construct(
         private readonly Client $client,

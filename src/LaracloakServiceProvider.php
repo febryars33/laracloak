@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak;
 
 use Illuminate\Auth\Middleware\Authenticate;
@@ -9,6 +11,16 @@ use Illuminate\Support\ServiceProvider;
 use Snairbef\Laracloak\Auth\Guard;
 use Snairbef\Laracloak\Auth\Provider;
 use Snairbef\Laracloak\Auth\UserResolver;
+use Snairbef\Laracloak\Contracts\Discovery as ContractsDiscovery;
+use Snairbef\Laracloak\Contracts\Identity as ContractsIdentity;
+use Snairbef\Laracloak\Contracts\Jwt as ContractsJwt;
+use Snairbef\Laracloak\Contracts\Oidc as ContractsOidc;
+use Snairbef\Laracloak\Contracts\Pkce as ContractsPkce;
+use Snairbef\Laracloak\Contracts\Revocation as ContractsRevocation;
+use Snairbef\Laracloak\Contracts\State as ContractsState;
+use Snairbef\Laracloak\Contracts\Token as ContractsToken;
+use Snairbef\Laracloak\Contracts\Userinfo as ContractsUserinfo;
+use Snairbef\Laracloak\Contracts\UserResolver as ContractsUserResolver;
 use Snairbef\Laracloak\Http\Client;
 use Snairbef\Laracloak\Services\Discovery;
 use Snairbef\Laracloak\Services\Identity;
@@ -28,7 +40,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/laracloak.php',
+            __DIR__ . '/../config/laracloak.php',
             'laracloak',
         );
 
@@ -46,8 +58,10 @@ final class LaracloakServiceProvider extends ServiceProvider
         $this->provider();
 
         Authenticate::redirectUsing(
-            fn () => route('laracloak.login'),
+            fn() => route('laracloak.login'),
         );
+
+        $this->contracts();
     }
 
     /**
@@ -79,7 +93,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     private function publish(): void
     {
         $this->publishes([
-            __DIR__.'/../config/laracloak.php' => config_path('laracloak.php'),
+            __DIR__ . '/../config/laracloak.php' => config_path('laracloak.php'),
         ], 'laracloak-config');
     }
 
@@ -89,7 +103,7 @@ final class LaracloakServiceProvider extends ServiceProvider
     private function routes(): void
     {
         $this->loadRoutesFrom(
-            __DIR__.'/../routes/web.php',
+            __DIR__ . '/../routes/web.php',
         );
     }
 
@@ -113,12 +127,12 @@ final class LaracloakServiceProvider extends ServiceProvider
 
                 return new Guard(
                     $name,
-                    $app->make(Identity::class),
+                    $app->make(ContractsIdentity::class),
                     $app->make('request'),
                     $app->make('session.store'),
                     $provider,
-                    $app->make(Revocation::class),
-                    $app->make(UserResolver::class),
+                    $app->make(ContractsRevocation::class),
+                    $app->make(ContractsUserResolver::class),
                 );
             },
         );
@@ -139,6 +153,59 @@ final class LaracloakServiceProvider extends ServiceProvider
                     $app->make(Identity::class),
                 );
             },
+        );
+    }
+
+    private function contracts(): void
+    {
+        $this->app->alias(
+            Discovery::class,
+            ContractsDiscovery::class,
+        );
+
+        $this->app->alias(
+            Identity::class,
+            ContractsIdentity::class,
+        );
+
+        $this->app->alias(
+            Jwt::class,
+            ContractsJwt::class,
+        );
+
+        $this->app->alias(
+            Oidc::class,
+            ContractsOidc::class,
+        );
+
+        $this->app->alias(
+            Pkce::class,
+            ContractsPkce::class,
+        );
+
+        $this->app->alias(
+            Revocation::class,
+            ContractsRevocation::class,
+        );
+
+        $this->app->alias(
+            State::class,
+            ContractsState::class,
+        );
+
+        $this->app->alias(
+            Token::class,
+            ContractsToken::class,
+        );
+
+        $this->app->alias(
+            Userinfo::class,
+            ContractsUserinfo::class,
+        );
+
+        $this->app->alias(
+            UserResolver::class,
+            ContractsUserResolver::class,
         );
     }
 }

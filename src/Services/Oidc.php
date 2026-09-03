@@ -1,15 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Snairbef\Laracloak\Contracts\Discovery;
+use Snairbef\Laracloak\Contracts\Jwt;
+use Snairbef\Laracloak\Contracts\Oidc as Contract;
+use Snairbef\Laracloak\Contracts\Pkce;
+use Snairbef\Laracloak\Contracts\Revocation;
+use Snairbef\Laracloak\Contracts\State;
+use Snairbef\Laracloak\Contracts\Token;
+use Snairbef\Laracloak\Contracts\Userinfo;
 use Snairbef\Laracloak\Exceptions\OidcException;
-use Snairbef\Laracloak\Support\Pkce;
-use Snairbef\Laracloak\Support\State;
 
-final class Oidc
+final class Oidc implements Contract
 {
     public function __construct(
         private readonly Discovery $discovery,
@@ -65,8 +73,8 @@ final class Oidc
 
         return redirect()->away(
             $this->discovery->get('authorization_endpoint')
-                .'?'
-                .$query,
+                . '?'
+                . $query,
         );
     }
 
@@ -431,8 +439,8 @@ final class Oidc
         $query['client_id'] = $this->client();
 
         return $endpoint
-            .(str_contains($endpoint, '?') ? '&' : '?')
-            .http_build_query(
+            . (str_contains($endpoint, '?') ? '&' : '?')
+            . http_build_query(
                 $query,
                 '',
                 '&',
@@ -492,7 +500,7 @@ final class Oidc
             ' ',
             array_filter(
                 array_map(
-                    static fn (mixed $scope): string => is_string($scope)
+                    static fn(mixed $scope): string => is_string($scope)
                         ? trim($scope)
                         : '',
                     $scopes,

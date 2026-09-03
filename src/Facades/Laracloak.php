@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Facades;
 
 use Illuminate\Support\Facades\Facade;

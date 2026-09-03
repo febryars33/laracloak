@@ -1,12 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Snairbef\Laracloak\Contracts\Discovery as Contract;
 use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Http\Client;
 
-final class Discovery
+final class Discovery implements Contract
 {
     public function __construct(
         private readonly Client $client,
@@ -22,7 +25,7 @@ final class Discovery
                     3600,
                 ),
             ),
-            fn (): array => $this->fetch(),
+            fn(): array => $this->fetch(),
         );
 
         if ($key === null) {
@@ -71,7 +74,7 @@ final class Discovery
         }
 
         $response = $this->client->get(
-            $issuer.'/.well-known/openid-configuration',
+            $issuer . '/.well-known/openid-configuration',
         );
 
         $document = $response->json();
@@ -87,7 +90,7 @@ final class Discovery
 
     private function key(): string
     {
-        return 'laracloak.discovery.'.sha1(
+        return 'laracloak.discovery.' . sha1(
             (string) config('laracloak.issuer'),
         );
     }

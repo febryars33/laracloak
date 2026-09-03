@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Auth;
 
 use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
+use Snairbef\Laracloak\Contracts\UserResolver as Contract;
 
-final class UserResolver
+final class UserResolver implements Contract
 {
     public function resolve(array $attributes): ?Authenticatable
     {
@@ -90,6 +93,6 @@ final class UserResolver
             'sub' => $attributes['sub'] ?? null,
             'name' => $attributes['name'] ?? null,
             'email' => $attributes['email'] ?? null,
-        ], static fn (mixed $value): bool => $value !== null);
+        ], static fn(mixed $value): bool => $value !== null);
     }
 }

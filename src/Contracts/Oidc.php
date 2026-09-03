@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Contracts;
+
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 interface Oidc
 {
-    public function login(): string;
+    public function login(Request $request): RedirectResponse;
 
-    public function token(string $code): array;
+    public function callback(Request $request): RedirectResponse;
 
-    public function refresh(array $token): array;
+    public function logout(Request $request): RedirectResponse;
 
-    public function user(array $token): array;
-
-    public function logout(array $token): string;
+    public function backchannel(?string $token): void;
 }

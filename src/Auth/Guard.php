@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Auth;
 
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -7,8 +9,9 @@ use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Http\Request;
 use Illuminate\Session\Store;
-use Snairbef\Laracloak\Services\Identity;
-use Snairbef\Laracloak\Services\Revocation;
+use Snairbef\Laracloak\Contracts\Identity;
+use Snairbef\Laracloak\Contracts\Revocation;
+use Snairbef\Laracloak\Contracts\UserResolver;
 
 final class Guard implements StatefulGuard
 {

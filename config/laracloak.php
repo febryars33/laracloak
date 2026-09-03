@@ -41,6 +41,30 @@ return [
         ),
     ],
 
+    'lock' => [
+        'seconds' => env(
+            'LARACLOAK_LOCK_SECONDS',
+            20,
+        ),
+
+        'block' => env(
+            'LARACLOAK_LOCK_BLOCK',
+            5,
+        ),
+    ],
+
+    'http' => [
+        'timeout' => env(
+            'LARACLOAK_HTTP_TIMEOUT',
+            10,
+        ),
+
+        'connect_timeout' => env(
+            'LARACLOAK_HTTP_CONNECT_TIMEOUT',
+            5,
+        ),
+    ],
+
     'user' => [
         'model' => env(
             'LARACLOAK_USER_MODEL',

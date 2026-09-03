@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Cache;
+use Snairbef\Laracloak\Contracts\Token as Contract;
 use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Http\Client;
 
-final class Token
+final class Token implements Contract
 {
     public function __construct(
         private readonly Client $client,
@@ -216,8 +219,8 @@ final class Token
 
     private function lock(): string
     {
-        return 'laracloak.token.'.sha1(
-            $this->id().'|'.$this->session->getId(),
+        return 'laracloak.token.' . sha1(
+            $this->id() . '|' . $this->session->getId(),
         );
     }
 

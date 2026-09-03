@@ -1,17 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Firebase\JWT\JWK as FirebaseJWK;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Illuminate\Support\Facades\Cache;
+use Snairbef\Laracloak\Contracts\Jwt as Contract;
 use Snairbef\Laracloak\Exceptions\OidcException;
 use Snairbef\Laracloak\Http\Client;
 
-final class Jwt
+final class Jwt implements Contract
 {
     private const EVENT =
-        'http://schemas.openid.net/event/backchannel-logout';
+    'http://schemas.openid.net/event/backchannel-logout';
 
     private const CACHE = 'laracloak.jwks.';
 
@@ -95,7 +98,7 @@ final class Jwt
                     ),
                 ),
             ),
-            fn (): array => $this->fetch(),
+            fn(): array => $this->fetch(),
         );
 
         if (! is_array($jwks)) {
@@ -259,7 +262,7 @@ final class Jwt
 
     private function key(): string
     {
-        return self::CACHE.sha1(
+        return self::CACHE . sha1(
             (string) config('laracloak.issuer'),
         );
     }

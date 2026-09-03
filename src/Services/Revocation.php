@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Snairbef\Laracloak\Contracts\Revocation as Contract;
 
-final class Revocation
+final class Revocation implements Contract
 {
     public function revoke(string $subject): void
     {
@@ -31,6 +34,6 @@ final class Revocation
 
     private function key(string $subject): string
     {
-        return 'laracloak.logout.'.sha1($subject);
+        return 'laracloak.logout.' . sha1($subject);
     }
 }

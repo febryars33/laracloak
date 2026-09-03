@@ -1,8 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Support;
 
-final class Pkce
+use Snairbef\Laracloak\Contracts\Pkce as Contract;
+
+final class Pkce implements Contract
 {
     public function generate(): string
     {

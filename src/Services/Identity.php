@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Session\Store;
+use Snairbef\Laracloak\Contracts\Identity as Contract;
+use Snairbef\Laracloak\Contracts\Token;
+use Snairbef\Laracloak\Contracts\Userinfo;
 use Snairbef\Laracloak\Exceptions\OidcException;
 
-final class Identity
+final class Identity implements Contract
 {
     public function __construct(
         private readonly Store $session,
