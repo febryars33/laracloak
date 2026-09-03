@@ -142,7 +142,7 @@ final class Guard implements StatefulGuard
         return $this->validate($credentials);
     }
 
-    public function onceUsingId($id): bool
+    public function onceUsingId($id): Authenticatable|false
     {
         return $this->loginUsingId($id) !== false;
     }

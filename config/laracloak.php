@@ -1,6 +1,8 @@
 <?php
 
-use App\Models\User;
+// use App\Models\User;
+
+use Snairbef\Laracloak\Models\User;
 
 return [
 
@@ -68,7 +70,7 @@ return [
     'user' => [
         'model' => env(
             'LARACLOAK_USER_MODEL',
-            User::class,
+            User::class
         ),
 
         'provision' => env(
