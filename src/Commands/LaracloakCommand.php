@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Snairbef\Laracloak\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class LaracloakCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laracloak';
 
     public $description = 'My command';
 
