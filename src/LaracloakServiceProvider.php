@@ -128,7 +128,6 @@ final class LaracloakServiceProvider extends ServiceProvider
                 return new Guard(
                     $name,
                     $app->make(ContractsIdentity::class),
-                    $app->make('request'),
                     $app->make('session.store'),
                     $provider,
                     $app->make(ContractsRevocation::class),

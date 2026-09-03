@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 return [
 
     'issuer' => env(
@@ -68,7 +66,7 @@ return [
     'user' => [
         'model' => env(
             'LARACLOAK_USER_MODEL',
-            User::class
+            'App\\Models\\User'
         ),
 
         'provision' => env(

@@ -7,7 +7,6 @@ namespace Snairbef\Laracloak\Auth;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Http\Request;
 use Illuminate\Session\Store;
 use Snairbef\Laracloak\Contracts\Identity;
 use Snairbef\Laracloak\Contracts\Revocation;
@@ -22,7 +21,6 @@ final class Guard implements StatefulGuard
     public function __construct(
         private readonly string $name,
         private readonly Identity $identity,
-        private Request $request,
         private readonly Store $session,
         private UserProvider $provider,
         private readonly Revocation $revocation,
@@ -142,9 +140,10 @@ final class Guard implements StatefulGuard
         return $this->validate($credentials);
     }
 
-    public function onceUsingId($id): Authenticatable|false
-    {
-        return $this->loginUsingId($id) !== false;
+    public function onceUsingId(
+        $id,
+    ): Authenticatable|false {
+        return $this->loginUsingId($id);
     }
 
     public function viaRemember(): bool
@@ -160,14 +159,6 @@ final class Guard implements StatefulGuard
     public function getName(): string
     {
         return $this->name;
-    }
-
-    public function setRequest(
-        Request $request,
-    ): static {
-        $this->request = $request;
-
-        return $this;
     }
 
     private function subject(array $attributes): ?string

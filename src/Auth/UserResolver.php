@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Snairbef\Laracloak\Auth;
 
-use App\Models\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
@@ -41,13 +40,21 @@ final class UserResolver implements Contract
     {
         $model = config(
             'laracloak.user.model',
-            User::class,
+            'App\\Models\\User',
         );
 
         if (
             ! is_string($model)
-            || ! is_a($model, Authenticatable::class, true)
-            || ! is_a($model, Model::class, true)
+            || ! is_a(
+                $model,
+                Authenticatable::class,
+                true,
+            )
+            || ! is_a(
+                $model,
+                Model::class,
+                true,
+            )
         ) {
             throw new RuntimeException(
                 'Laracloak user model must extend an Eloquent Authenticatable model.',

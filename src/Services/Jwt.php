@@ -87,7 +87,7 @@ final class Jwt implements Contract
             Cache::forget($key);
         }
 
-        $jwks = Cache::remember(
+        return Cache::remember(
             $key,
             now()->addSeconds(
                 max(
@@ -100,14 +100,6 @@ final class Jwt implements Contract
             ),
             fn (): array => $this->fetch(),
         );
-
-        if (! is_array($jwks)) {
-            throw OidcException::authentication(
-                'Invalid OIDC JWKS response.',
-            );
-        }
-
-        return $jwks;
     }
 
     private function fetch(): array
@@ -117,12 +109,6 @@ final class Jwt implements Contract
                 $this->discovery->get('jwks_uri'),
             )
             ->json();
-
-        if (! is_array($jwks)) {
-            throw OidcException::authentication(
-                'Invalid OIDC JWKS response.',
-            );
-        }
 
         try {
             FirebaseJWK::parseKeySet($jwks);

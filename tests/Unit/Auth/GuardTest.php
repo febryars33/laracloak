@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Contracts\Auth\UserProvider;
-use Illuminate\Http\Request;
 use Illuminate\Session\ArraySessionHandler;
 use Illuminate\Session\Store;
 use Snairbef\Laracloak\Auth\Guard;
@@ -19,7 +18,6 @@ function guard(
     return new Guard(
         'web',
         $identity ?? Mockery::mock(Identity::class),
-        Request::create('/'),
         new Store(
             'test',
             new ArraySessionHandler(3600),
