@@ -206,6 +206,18 @@ final class Oidc
             ? $this->logoutUrl($tokens)
             : null;
 
+        Log::info('Laracloak OIDC logout.', [
+            'session' => $request->session()->getId(),
+            'has_tokens' => is_array($tokens),
+            'has_url' => $url !== null,
+            'endpoint' => is_string($url)
+                ? parse_url($url, PHP_URL_PATH)
+                : null,
+            'host' => is_string($url)
+                ? parse_url($url, PHP_URL_HOST)
+                : null,
+        ]);
+
         $this->clear($request);
 
         $request->session()->invalidate();

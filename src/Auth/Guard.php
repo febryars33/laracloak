@@ -189,4 +189,9 @@ final class Guard implements StatefulGuard
 
         return null;
     }
+
+    public function oidc(): bool
+    {
+        return true;
+    }
 }
