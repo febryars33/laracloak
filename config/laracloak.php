@@ -80,6 +80,7 @@ return [
         'token' => 'laracloak.token',
         'user' => 'laracloak.user',
         'identity_at' => 'laracloak.identity_at',
+        'sid' => 'laracloak.sid',
     ],
 
     'logout_endpoint' => env(

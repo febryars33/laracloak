@@ -14,11 +14,12 @@ function guard(
     ?Revocation $revocation = null,
     ?UserResolver $resolver = null,
     ?UserProvider $provider = null,
+    ?Store $session = null,
 ): Guard {
     return new Guard(
         'web',
         $identity ?? Mockery::mock(Identity::class),
-        new Store(
+        $session ?? new Store(
             'test',
             new ArraySessionHandler(3600),
         ),
@@ -126,6 +127,98 @@ it('clears identity when subject is revoked', function () {
 
     expect($guard->user())
         ->toBeNull();
+});
+
+it('clears identity when sid is revoked', function () {
+    $identity = Mockery::mock(Identity::class);
+    $revocation = Mockery::mock(Revocation::class);
+    $session = new Store('test', new ArraySessionHandler(3600));
+    $session->put('laracloak.sid', 'session-device-laptop-a');
+
+    $identity
+        ->shouldReceive('current')
+        ->once()
+        ->andReturn([
+            'sub' => 'subject-123',
+        ]);
+
+    $revocation
+        ->shouldReceive('revoked')
+        ->once()
+        ->with('session-device-laptop-a')
+        ->andReturnTrue();
+
+    $identity
+        ->shouldReceive('clear')
+        ->once();
+
+    $guard = guard(
+        identity: $identity,
+        revocation: $revocation,
+        session: $session,
+    );
+
+    expect($guard->user())
+        ->toBeNull();
+    expect($session->has('laracloak.sid'))
+        ->toBeFalse();
+});
+
+it('keeps identity when another sid is revoked', function () {
+    $identity = Mockery::mock(Identity::class);
+    $revocation = Mockery::mock(Revocation::class);
+    $resolver = Mockery::mock(UserResolver::class);
+    $session = new Store('test', new ArraySessionHandler(3600));
+    $session->put('laracloak.sid', 'session-device-laptop-b');
+
+    $attributes = [
+        'sub' => 'subject-123',
+        'name' => 'Febry',
+    ];
+
+    $user = new User([
+        'id' => 1,
+        'sub' => 'subject-123',
+        'name' => 'Febry',
+    ]);
+
+    $identity
+        ->shouldReceive('current')
+        ->once()
+        ->andReturn($attributes);
+
+    $identity
+        ->shouldReceive('get')
+        ->once()
+        ->andReturn($attributes);
+
+    $revocation
+        ->shouldReceive('revoked')
+        ->once()
+        ->with('session-device-laptop-b')
+        ->andReturnFalse();
+
+    $revocation
+        ->shouldReceive('revoked')
+        ->twice()
+        ->with('subject-123')
+        ->andReturnFalse();
+
+    $resolver
+        ->shouldReceive('resolve')
+        ->once()
+        ->with($attributes)
+        ->andReturn($user);
+
+    $guard = guard(
+        identity: $identity,
+        revocation: $revocation,
+        resolver: $resolver,
+        session: $session,
+    );
+
+    expect($guard->user())
+        ->toBe($user);
 });
 
 it('supports setUser', function () {

@@ -215,6 +215,30 @@ it('revokes the subject during back-channel logout', function () {
     )->backchannel('logout-token');
 });
 
+it('revokes the sid during back-channel logout', function () {
+    $jwt = Mockery::mock(Jwt::class);
+    $revocation = Mockery::mock(Revocation::class);
+
+    $jwt
+        ->shouldReceive('logout')
+        ->once()
+        ->with('logout-token')
+        ->andReturn([
+            'sub' => 'subject-123',
+            'sid' => 'session-device-1',
+        ]);
+
+    $revocation
+        ->shouldReceive('revoke')
+        ->once()
+        ->with('session-device-1');
+
+    oidcService(
+        jwt: $jwt,
+        revocation: $revocation,
+    )->backchannel('logout-token');
+});
+
 it('rejects an invalid back-channel logout token', function () {
     oidcService()->backchannel(null);
 })->throws(

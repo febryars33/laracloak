@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Session\Store;
+use Illuminate\Support\Facades\Log;
 use Snairbef\Laracloak\Contracts\Identity as Contract;
 use Snairbef\Laracloak\Contracts\Token;
 use Snairbef\Laracloak\Contracts\Userinfo;
 use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Exceptions\ConfigurationException;
+use Snairbef\Laracloak\Exceptions\HttpException;
 
 final class Identity implements Contract
 {
@@ -36,13 +38,39 @@ final class Identity implements Contract
 
     public function sync(?array $current = null): ?array
     {
-        $access = $this->token->access();
+        try {
+            $access = $this->token->access();
+        } catch (HttpException $e) {
+            if ($e->unauthenticated()) {
+                Log::info('Laracloak token expired or revoked, clearing session.', [
+                    'status' => $e->getStatusCode(),
+                ]);
+                $this->clear();
+
+                return null;
+            }
+
+            throw $e;
+        }
 
         if ($access === null) {
             return null;
         }
 
-        $profile = $this->userinfo->get($access);
+        try {
+            $profile = $this->userinfo->get($access);
+        } catch (HttpException $e) {
+            if ($e->unauthenticated()) {
+                Log::info('Laracloak userinfo rejected token, clearing session.', [
+                    'status' => $e->getStatusCode(),
+                ]);
+                $this->clear();
+
+                return null;
+            }
+
+            throw $e;
+        }
 
         $this->verify(
             $current ?? $this->current(),

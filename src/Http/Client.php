@@ -55,11 +55,9 @@ final class Client
     ): Response {
         $this->validate($url);
 
-        return $this->send(
-            $this->request()
-                ->asForm()
-                ->post($url, $data),
-        );
+        return $this->request()
+            ->asForm()
+            ->post($url, $data);
     }
 
     private function send(Response $response): Response

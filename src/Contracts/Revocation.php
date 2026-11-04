@@ -6,9 +6,9 @@ namespace Snairbef\Laracloak\Contracts;
 
 interface Revocation
 {
-    public function revoke(string $subject): void;
+    public function revoke(string $id): void;
 
-    public function revoked(string $subject): bool;
+    public function revoked(string $id): bool;
 
-    public function clear(string $subject): void;
+    public function clear(string $id): void;
 }

@@ -196,3 +196,20 @@ it('rejects logout tokens without a subject', function (): void {
     AuthenticationException::class,
     'OIDC logout subject is missing.',
 );
+
+it('validates a back-channel logout token with only sid', function (): void {
+    $jwt = app(Jwt::class);
+
+    $token = jwtToken([
+        'sub' => null,
+        'sid' => 'session-device-2',
+        'events' => [
+            'http://schemas.openid.net/event/backchannel-logout' => [],
+        ],
+    ]);
+
+    expect($jwt->logout($token))
+        ->toMatchArray([
+            'sid' => 'session-device-2',
+        ]);
+});

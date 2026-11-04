@@ -3,7 +3,6 @@
 use Illuminate\Session\ArraySessionHandler;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Http\Client;
 use Snairbef\Laracloak\Services\Discovery;
 use Snairbef\Laracloak\Services\Token;
@@ -111,7 +110,7 @@ it('returns null without tokens', function () {
         ->toBeNull();
 });
 
-it('rejects a missing access token', function () {
+it('clears session when access token is missing', function () {
     $session = tokenSession();
 
     $session->put(
@@ -129,13 +128,13 @@ it('rejects a missing access token', function () {
         $session,
     );
 
-    $token->access();
-})->throws(
-    AuthenticationException::class,
-    'OIDC access token is missing.',
-);
+    $result = $token->access();
 
-it('rejects refresh responses without an access token', function () {
+    expect($result)->toBeNull();
+    expect($session->has('laracloak.token'))->toBeFalse();
+});
+
+it('clears session when refresh response has no access token', function () {
     Http::fake([
         'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'token_endpoint' => 'http://localhost:8000/oauth/token',
@@ -164,5 +163,8 @@ it('rejects refresh responses without an access token', function () {
         $session,
     );
 
-    $token->access();
-})->throws(AuthenticationException::class);
+    $result = $token->access();
+
+    expect($result)->toBeNull();
+    expect($session->has('laracloak.token'))->toBeFalse();
+});

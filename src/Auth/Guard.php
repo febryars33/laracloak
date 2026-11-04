@@ -57,6 +57,12 @@ final class Guard implements StatefulGuard
             return $this->clear();
         }
 
+        $sid = $this->sid();
+
+        if ($sid !== null && $this->revocation->revoked($sid)) {
+            return $this->clear();
+        }
+
         if ($this->revocation->revoked($subject)) {
             return $this->clear();
         }
@@ -170,6 +176,17 @@ final class Guard implements StatefulGuard
             : null;
     }
 
+    private function sid(): ?string
+    {
+        $sid = $this->session->get(
+            (string) config('laracloak.session.sid'),
+        );
+
+        return is_string($sid) && trim($sid) !== ''
+            ? trim($sid)
+            : null;
+    }
+
     private function clear(): null
     {
         $this->identity->clear();
@@ -177,6 +194,7 @@ final class Guard implements StatefulGuard
         $this->session->forget([
             config('laracloak.session.flow'),
             config('laracloak.session.token'),
+            config('laracloak.session.sid'),
         ]);
 
         $this->user = null;

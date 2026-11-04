@@ -32,4 +32,12 @@ final class HttpException extends RuntimeException implements LaracloakException
     {
         return $this->statusCode;
     }
+
+    /**
+     * Determine whether the HTTP error indicates an invalid or revoked token.
+     */
+    public function unauthenticated(): bool
+    {
+        return $this->statusCode === 401;
+    }
 }

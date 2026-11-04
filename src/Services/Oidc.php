@@ -164,6 +164,23 @@ final class Oidc implements Contract
 
         $subject = (string) $profile['sub'];
 
+        $sid = is_string($claims['sid'] ?? null) && trim($claims['sid']) !== ''
+            ? trim($claims['sid'])
+            : null;
+
+        if ($sid !== null) {
+            $this->revocation->clear($sid);
+
+            $session->put(
+                $this->key('sid'),
+                $sid,
+            );
+        } else {
+            $session->forget(
+                $this->key('sid'),
+            );
+        }
+
         $this->revocation->clear($subject);
 
         $session->put(
@@ -190,6 +207,7 @@ final class Oidc implements Contract
         Log::info('Laracloak OIDC callback completed.', [
             'session' => $session->getId(),
             'subject' => $subject,
+            'sid' => $sid,
             'authenticated' => $session->has(
                 $this->key('user'),
             ),
@@ -288,6 +306,14 @@ final class Oidc implements Contract
         }
 
         $claims = $this->jwt->logout($token);
+
+        $sid = $claims['sid'] ?? null;
+
+        if (is_string($sid) && $sid !== '') {
+            $this->revocation->revoke($sid);
+
+            return;
+        }
 
         $subject = $claims['sub'] ?? null;
 
@@ -434,6 +460,7 @@ final class Oidc implements Contract
             $this->key('flow'),
             $this->key('token'),
             $this->key('user'),
+            $this->key('sid'),
             $this->key('identity_at'),
         ]);
     }

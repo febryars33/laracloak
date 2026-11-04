@@ -7,6 +7,7 @@ namespace Snairbef\Laracloak\Services;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Snairbef\Laracloak\Contracts\Token as Contract;
 use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Exceptions\ConfigurationException;
@@ -36,11 +37,18 @@ final class Token implements Contract
 
     public function refresh(string $refresh): array
     {
-        $tokens = $this->send([
-            'grant_type' => 'refresh_token',
-            'refresh_token' => $refresh,
-            'client_id' => $this->id(),
-        ]);
+        try {
+            $tokens = $this->send([
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refresh,
+                'client_id' => $this->id(),
+            ]);
+        } catch (HttpException $e) {
+            throw new AuthenticationException(
+                message: 'OIDC refresh token is invalid or revoked.',
+                previous: $e,
+            );
+        }
 
         $tokens['refresh_token'] ??= $refresh;
 
@@ -60,9 +68,10 @@ final class Token implements Contract
         );
 
         if ($access === null) {
-            throw new AuthenticationException(
-                'OIDC access token is missing.',
-            );
+            Log::info('Laracloak access token missing from session, clearing.');
+            $this->purge();
+
+            return null;
         }
 
         if (! $this->expired($tokens)) {
@@ -107,21 +116,32 @@ final class Token implements Contract
                     );
 
                     if ($refresh === null) {
-                        throw new AuthenticationException(
-                            'OIDC refresh token is missing.',
-                        );
+                        Log::info('Laracloak refresh token missing, clearing session.');
+                        $this->purge();
+
+                        return null;
                     }
 
-                    $tokens = $this->refresh($refresh);
+                    try {
+                        $tokens = $this->refresh($refresh);
+                    } catch (AuthenticationException|HttpException $e) {
+                        Log::info('Laracloak token refresh failed, clearing session.', [
+                            'reason' => $e->getMessage(),
+                        ]);
+                        $this->purge();
+
+                        return null;
+                    }
 
                     $access = $this->value(
                         $tokens['access_token'] ?? null,
                     );
 
                     if ($access === null) {
-                        throw new AuthenticationException(
-                            'OIDC refresh response does not contain an access token.',
-                        );
+                        Log::info('Laracloak refresh response missing access token, clearing session.');
+                        $this->purge();
+
+                        return null;
                     }
 
                     $this->store($tokens);
@@ -174,6 +194,15 @@ final class Token implements Contract
         $this->session->save();
     }
 
+    private function purge(): void
+    {
+        $this->session->forget(
+            config('laracloak.session.token'),
+        );
+
+        $this->session->save();
+    }
+
     private function send(array $data): array
     {
         if (
@@ -187,19 +216,6 @@ final class Token implements Contract
             $this->discovery->get('token_endpoint'),
             $data,
         );
-
-        if ($response->failed()) {
-            $body = $response->json();
-
-            if (
-                is_array($body)
-                && ($body['error'] ?? null) === 'invalid_grant'
-            ) {
-                throw new AuthenticationException('OIDC refresh token is invalid or revoked.');
-            }
-
-            throw new HttpException($response);
-        }
 
         $tokens = $response->json();
 

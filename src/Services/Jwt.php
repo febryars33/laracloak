@@ -217,8 +217,12 @@ final class Jwt implements Contract
     private function subject(array $claims): void
     {
         $subject = $claims['sub'] ?? null;
+        $sid = $claims['sid'] ?? null;
 
-        if (! is_string($subject) || $subject === '') {
+        $hasSub = is_string($subject) && trim($subject) !== '';
+        $hasSid = is_string($sid) && trim($sid) !== '';
+
+        if (! $hasSub && ! $hasSid) {
             throw new AuthenticationException('OIDC logout subject is missing.');
         }
     }
