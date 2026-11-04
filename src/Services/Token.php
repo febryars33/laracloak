@@ -8,7 +8,9 @@ use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Cache;
 use Snairbef\Laracloak\Contracts\Token as Contract;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
+use Snairbef\Laracloak\Exceptions\HttpException;
 use Snairbef\Laracloak\Http\Client;
 
 final class Token implements Contract
@@ -58,7 +60,7 @@ final class Token implements Contract
         );
 
         if ($access === null) {
-            throw OidcException::authentication(
+            throw new AuthenticationException(
                 'OIDC access token is missing.',
             );
         }
@@ -105,7 +107,7 @@ final class Token implements Contract
                     );
 
                     if ($refresh === null) {
-                        throw OidcException::authentication(
+                        throw new AuthenticationException(
                             'OIDC refresh token is missing.',
                         );
                     }
@@ -117,7 +119,7 @@ final class Token implements Contract
                     );
 
                     if ($access === null) {
-                        throw OidcException::authentication(
+                        throw new AuthenticationException(
                             'OIDC refresh response does not contain an access token.',
                         );
                     }
@@ -128,10 +130,7 @@ final class Token implements Contract
                 },
             );
         } catch (LockTimeoutException $e) {
-            throw OidcException::authentication(
-                'Unable to refresh the OIDC access token.',
-                $e,
-            );
+            throw new AuthenticationException(message: 'Unable to refresh the OIDC access token.', previous: $e);
         }
     }
 
@@ -196,20 +195,16 @@ final class Token implements Contract
                 is_array($body)
                 && ($body['error'] ?? null) === 'invalid_grant'
             ) {
-                throw OidcException::authentication(
-                    'OIDC refresh token is invalid or revoked.',
-                );
+                throw new AuthenticationException('OIDC refresh token is invalid or revoked.');
             }
 
-            throw OidcException::http($response);
+            throw new HttpException($response);
         }
 
         $tokens = $response->json();
 
         if (! is_array($tokens)) {
-            throw OidcException::authentication(
-                'Invalid OIDC token response.',
-            );
+            throw new AuthenticationException('Invalid OIDC token response.');
         }
 
         $tokens['created_at'] = now()->timestamp;
@@ -290,9 +285,7 @@ final class Token implements Contract
         $value = $this->value($value);
 
         if ($value === null) {
-            throw OidcException::configuration(
-                "Laracloak configuration [{$key}] is missing.",
-            );
+            throw new ConfigurationException("Laracloak configuration [{$key}] is missing.");
         }
 
         return $value;

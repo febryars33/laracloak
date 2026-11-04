@@ -29,7 +29,9 @@ arch('controllers are final')
     ->toBeFinal();
 
 arch('exceptions extend runtime exception')
-    ->expect('Snairbef\Laracloak\Exceptions\OidcException')
+    ->expect('Snairbef\Laracloak\Exceptions\AuthenticationException')
+    ->expect('Snairbef\Laracloak\Exceptions\ConfigurationException')
+    ->expect('Snairbef\Laracloak\Exceptions\HttpException')
     ->toExtend(RuntimeException::class);
 
 arch('package does not depend on debugging packages')

@@ -15,7 +15,8 @@ use Snairbef\Laracloak\Contracts\Revocation;
 use Snairbef\Laracloak\Contracts\State;
 use Snairbef\Laracloak\Contracts\Token;
 use Snairbef\Laracloak\Contracts\Userinfo;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
 
 final class Oidc implements Contract
 {
@@ -102,9 +103,7 @@ final class Oidc implements Contract
                 'session_data' => $session->all(),
             ]);
 
-            throw OidcException::authentication(
-                'OIDC authentication session has expired.',
-            );
+            throw new AuthenticationException('OIDC authentication session has expired.');
         }
 
         $this->state(
@@ -115,7 +114,7 @@ final class Oidc implements Contract
         $code = $request->query('code');
 
         if (! is_string($code) || $code === '') {
-            throw OidcException::authentication(
+            throw new AuthenticationException(
                 'OIDC authorization code is missing.',
             );
         }
@@ -127,9 +126,7 @@ final class Oidc implements Contract
             ! is_string($nonce)
             || ! is_string($verifier)
         ) {
-            throw OidcException::authentication(
-                'Invalid OIDC authentication session.',
-            );
+            throw new AuthenticationException('Invalid OIDC authentication session.');
         }
 
         $tokens = $this->token->exchange(
@@ -140,9 +137,7 @@ final class Oidc implements Contract
         $idToken = $tokens['id_token'] ?? null;
 
         if (! is_string($idToken) || $idToken === '') {
-            throw OidcException::authentication(
-                'OIDC ID token is missing.',
-            );
+            throw new AuthenticationException('OIDC ID token is missing.');
         }
 
         $claims = (array) $this->jwt->validate(
@@ -157,9 +152,7 @@ final class Oidc implements Contract
         $access = $tokens['access_token'] ?? null;
 
         if (! is_string($access) || $access === '') {
-            throw OidcException::authentication(
-                'OIDC access token is missing.',
-            );
+            throw new AuthenticationException('OIDC access token is missing.');
         }
 
         $profile = $this->userinfo->get($access);
@@ -291,9 +284,7 @@ final class Oidc implements Contract
         mixed $token,
     ): void {
         if (! is_string($token)) {
-            throw OidcException::authentication(
-                'OIDC logout token is missing.',
-            );
+            throw new AuthenticationException('OIDC logout token is missing.');
         }
 
         $claims = $this->jwt->logout($token);
@@ -322,9 +313,7 @@ final class Oidc implements Contract
             || ! is_string($flow['state'] ?? null)
             || ! hash_equals($flow['state'], $state)
         ) {
-            throw OidcException::authentication(
-                'Invalid OIDC state.',
-            );
+            throw new AuthenticationException('Invalid OIDC state.');
         }
     }
 
@@ -338,9 +327,7 @@ final class Oidc implements Contract
             ! is_string($actual)
             || ! hash_equals($expected, $actual)
         ) {
-            throw OidcException::authentication(
-                'Invalid OIDC nonce.',
-            );
+            throw new AuthenticationException('Invalid OIDC nonce.');
         }
     }
 
@@ -355,24 +342,18 @@ final class Oidc implements Contract
             ! is_string($expected)
             || $expected === ''
         ) {
-            throw OidcException::authentication(
-                'OIDC ID token subject is missing.',
-            );
+            throw new AuthenticationException('OIDC ID token subject is missing.');
         }
 
         if (
             ! is_string($actual)
             || $actual === ''
         ) {
-            throw OidcException::authentication(
-                'OIDC UserInfo subject is missing.',
-            );
+            throw new AuthenticationException('OIDC UserInfo subject is missing.');
         }
 
         if (! hash_equals($expected, $actual)) {
-            throw OidcException::authentication(
-                'OIDC subject mismatch.',
-            );
+            throw new AuthenticationException('OIDC subject mismatch.');
         }
     }
 
@@ -389,9 +370,7 @@ final class Oidc implements Contract
             $this->key('flow'),
         );
 
-        throw OidcException::authentication(
-            'OIDC authentication failed.',
-        );
+        throw new AuthenticationException('OIDC authentication failed.');
     }
 
     private function logoutUrl(
@@ -491,9 +470,7 @@ final class Oidc implements Contract
         );
 
         if (! is_array($scopes)) {
-            throw OidcException::configuration(
-                'OIDC scopes must be an array.',
-            );
+            throw new ConfigurationException('OIDC scopes must be an array.');
         }
 
         return implode(
@@ -517,9 +494,7 @@ final class Oidc implements Contract
             ! is_string($value)
             || trim($value) === ''
         ) {
-            throw OidcException::configuration(
-                "Laracloak configuration [{$key}] is missing.",
-            );
+            throw new ConfigurationException("Laracloak configuration [{$key}] is missing.");
         }
 
         return trim($value);

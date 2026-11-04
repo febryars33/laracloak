@@ -3,7 +3,7 @@
 use Illuminate\Session\ArraySessionHandler;
 use Illuminate\Session\Store;
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Http\Client;
 use Snairbef\Laracloak\Services\Discovery;
 use Snairbef\Laracloak\Services\Token;
@@ -131,7 +131,7 @@ it('rejects a missing access token', function () {
 
     $token->access();
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC access token is missing.',
 );
 
@@ -165,4 +165,4 @@ it('rejects refresh responses without an access token', function () {
     );
 
     $token->access();
-})->throws(OidcException::class);
+})->throws(AuthenticationException::class);

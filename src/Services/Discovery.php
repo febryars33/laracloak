@@ -6,7 +6,7 @@ namespace Snairbef\Laracloak\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Snairbef\Laracloak\Contracts\Discovery as Contract;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
 use Snairbef\Laracloak\Http\Client;
 
 final class Discovery implements Contract
@@ -38,9 +38,7 @@ final class Discovery implements Contract
             ! is_string($value)
             || trim($value) === ''
         ) {
-            throw OidcException::configuration(
-                "OIDC discovery field [{$key}] is missing.",
-            );
+            throw new ConfigurationException("OIDC discovery field [{$key}] is missing.");
         }
 
         return trim($value);
@@ -54,9 +52,7 @@ final class Discovery implements Contract
             ! is_string($issuer)
             || trim($issuer) === ''
         ) {
-            throw OidcException::configuration(
-                'OIDC issuer is not configured.',
-            );
+            throw new ConfigurationException("OIDC issuer is not configured.");
         }
 
         $issuer = rtrim(
@@ -68,9 +64,7 @@ final class Discovery implements Contract
             $issuer,
             FILTER_VALIDATE_URL,
         )) {
-            throw OidcException::configuration(
-                "Invalid OIDC issuer: {$issuer}",
-            );
+            throw new ConfigurationException("Invalid OIDC issuer: {$issuer}");
         }
 
         $response = $this->client->get(
@@ -80,9 +74,7 @@ final class Discovery implements Contract
         $document = $response->json();
 
         if (! is_array($document)) {
-            throw OidcException::configuration(
-                'Invalid OIDC discovery response.',
-            );
+            throw new ConfigurationException("Invalid OIDC discovery response");
         }
 
         return $document;

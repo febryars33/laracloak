@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Services\Userinfo;
 
 it('retrieves userinfo', function () {
@@ -30,7 +30,7 @@ it('retrieves userinfo', function () {
 it('rejects an empty access token', function () {
     app(Userinfo::class)->get('');
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC access token is missing.',
 );
 
@@ -45,6 +45,6 @@ it('rejects invalid userinfo responses', function () {
 
     app(Userinfo::class)->get('access-token');
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC userinfo response.',
 );

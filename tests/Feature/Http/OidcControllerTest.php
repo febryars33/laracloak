@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Snairbef\Laracloak\Contracts\Oidc;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Http\Controllers\OidcController;
 
 beforeEach(function () {
@@ -102,11 +102,7 @@ it('returns 200 for rejected back-channel logout requests', function (): void {
     $oidc->shouldReceive('backchannel')
         ->once()
         ->with('invalid')
-        ->andThrow(
-            OidcException::authentication(
-                'Invalid OIDC logout token.',
-            ),
-        );
+        ->andThrow(new AuthenticationException('Invalid OIDC logout token.'));
 
     $this->app->instance(
         Oidc::class,

@@ -8,7 +8,8 @@ use Illuminate\Session\Store;
 use Snairbef\Laracloak\Contracts\Identity as Contract;
 use Snairbef\Laracloak\Contracts\Token;
 use Snairbef\Laracloak\Contracts\Userinfo;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
 
 final class Identity implements Contract
 {
@@ -94,9 +95,7 @@ final class Identity implements Contract
             || $actual === ''
             || ! hash_equals($expected, $actual)
         ) {
-            throw OidcException::authentication(
-                'OIDC subject mismatch.',
-            );
+            throw new AuthenticationException('OIDC subject mismatch.');
         }
     }
 
@@ -147,9 +146,7 @@ final class Identity implements Contract
             ! is_string($key)
             || trim($key) === ''
         ) {
-            throw OidcException::configuration(
-                "Laracloak session key [{$name}] is missing.",
-            );
+            throw new ConfigurationException("Laracloak session key [{$name}] is missing.");
         }
 
         return trim($key);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Snairbef\Laracloak\Services;
 
 use Snairbef\Laracloak\Contracts\Userinfo as Contract;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Http\Client;
 
 final class Userinfo implements Contract
@@ -18,9 +18,7 @@ final class Userinfo implements Contract
     public function get(string $access): array
     {
         if (trim($access) === '') {
-            throw OidcException::authentication(
-                'OIDC access token is missing.',
-            );
+            throw new AuthenticationException('OIDC access token is missing.');
         }
 
         $profile = $this->client
@@ -31,9 +29,7 @@ final class Userinfo implements Contract
             ->json();
 
         if (! is_array($profile)) {
-            throw OidcException::authentication(
-                'Invalid OIDC userinfo response.',
-            );
+            throw new AuthenticationException('Invalid OIDC userinfo response.');
         }
 
         return $profile;

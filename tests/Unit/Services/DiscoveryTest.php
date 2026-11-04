@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
 use Snairbef\Laracloak\Services\Discovery;
 
 beforeEach(function () {
@@ -63,7 +63,7 @@ it('throws when a discovery field is missing', function () {
 
     app(Discovery::class)->get('userinfo_endpoint');
 })->throws(
-    OidcException::class,
+    ConfigurationException::class,
     'OIDC discovery field [userinfo_endpoint] is missing.',
 );
 
@@ -75,6 +75,6 @@ it('rejects an invalid issuer', function () {
 
     app(Discovery::class)->get();
 })->throws(
-    OidcException::class,
+    ConfigurationException::class,
     'Invalid OIDC issuer: invalid',
 );

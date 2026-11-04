@@ -1,49 +1,45 @@
 <?php
 
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Illuminate\Support\Facades\Http;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
+use Snairbef\Laracloak\Exceptions\ConfigurationException;
+use Snairbef\Laracloak\Exceptions\HttpException;
 
 it('creates configuration exceptions', function () {
-    $exception = OidcException::configuration(
-        'Configuration failed.',
-    );
+    $exception = new ConfigurationException('Configuration failed.');
 
     expect($exception)
-        ->toBeInstanceOf(OidcException::class)
+        ->toBeInstanceOf(ConfigurationException::class)
         ->and($exception->getMessage())
-        ->toBe('Configuration failed.')
-        ->and($exception->status())
-        ->toBeNull();
+        ->toBe('Configuration failed.');
 });
 
 it('creates authentication exceptions', function () {
-    $exception = OidcException::authentication(
-        'Authentication failed.',
-    );
+    $exception = new AuthenticationException('Authentication failed.');
 
     expect($exception->getMessage())
-        ->toBe('Authentication failed.')
-        ->and($exception->status())
-        ->toBeNull();
+        ->toBe('Authentication failed.');
 });
 
 it('creates HTTP exceptions with status', function () {
-    $response = response()->json([], 401);
+    Http::fake([
+        '*' => Http::response([], 401)
+    ]);
 
-    $exception = OidcException::http($response);
+    $response = Http::get('https://example.com');
 
-    expect($exception->status())
+    $exception = new HttpException($response);
+
+    expect($exception->getStatusCode())
         ->toBe(401)
         ->and($exception->getMessage())
-        ->toBe('OIDC provider returned HTTP 401.');
+        ->toBe('OIDC provider returned HTTP status 401.');
 });
 
 it('preserves previous exceptions', function () {
     $previous = new RuntimeException('Previous.');
 
-    $exception = OidcException::authentication(
-        'Authentication failed.',
-        $previous,
-    );
+    $exception = new AuthenticationException(message: 'Authentication failed.', previous: $previous);
 
     expect($exception->getPrevious())
         ->toBe($previous);

@@ -1,7 +1,8 @@
 <?php
 
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\HttpException;
 use Snairbef\Laracloak\Http\Client;
 
 it('rejects empty URLs', function () {
@@ -99,4 +100,4 @@ it('throws OIDC exceptions for failed HTTP responses', function () {
     $client = new Client;
 
     $client->get('https://provider.test/test');
-})->throws(OidcException::class);
+})->throws(HttpException::class);

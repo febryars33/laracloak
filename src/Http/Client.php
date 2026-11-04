@@ -8,7 +8,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\HttpException;
 
 final class Client
 {
@@ -65,7 +65,7 @@ final class Client
     private function send(Response $response): Response
     {
         if ($response->failed()) {
-            throw OidcException::http($response);
+            throw new HttpException($response);
         }
 
         return $response;

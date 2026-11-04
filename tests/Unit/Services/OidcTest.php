@@ -10,7 +10,7 @@ use Snairbef\Laracloak\Contracts\Revocation;
 use Snairbef\Laracloak\Contracts\State;
 use Snairbef\Laracloak\Contracts\Token;
 use Snairbef\Laracloak\Contracts\Userinfo;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Services\Oidc;
 
 function oidcRequest(): Request
@@ -119,7 +119,7 @@ it('rejects an invalid callback state', function () {
 
     oidcService()->callback($request);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC state.',
 );
 
@@ -139,7 +139,7 @@ it('rejects a missing authorization code', function () {
 
     oidcService()->callback($request);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC authorization code is missing.',
 );
 
@@ -153,7 +153,7 @@ it('rejects an OIDC error callback', function () {
 
     oidcService()->callback($request);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC authentication failed.',
 );
 
@@ -218,6 +218,6 @@ it('revokes the subject during back-channel logout', function () {
 it('rejects an invalid back-channel logout token', function () {
     oidcService()->backchannel(null);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC logout token is missing.',
 );

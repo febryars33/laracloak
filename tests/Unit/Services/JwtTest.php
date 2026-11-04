@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Firebase\JWT\JWT as FirebaseJwt;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Services\Jwt;
 
 beforeEach(function (): void {
@@ -96,7 +96,7 @@ it('rejects an invalid token', function (): void {
         'invalid.token.value',
     );
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC ID token.',
 );
 
@@ -127,7 +127,7 @@ it('rejects a token signed by another key', function (): void {
     expect(
         fn () => app(Jwt::class)->validate($token),
     )->toThrow(
-        OidcException::class,
+        AuthenticationException::class,
     );
 });
 
@@ -151,7 +151,7 @@ it('rejects logout tokens without the logout event', function (): void {
         jwtToken(),
     );
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC logout event.',
 );
 
@@ -165,7 +165,7 @@ it('rejects logout tokens for another client', function (): void {
 
     app(Jwt::class)->logout($token);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC logout audience.',
 );
 
@@ -179,7 +179,7 @@ it('rejects logout tokens from another issuer', function (): void {
 
     app(Jwt::class)->logout($token);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'Invalid OIDC logout issuer.',
 );
 
@@ -193,6 +193,6 @@ it('rejects logout tokens without a subject', function (): void {
 
     app(Jwt::class)->logout($token);
 })->throws(
-    OidcException::class,
+    AuthenticationException::class,
     'OIDC logout subject is missing.',
 );

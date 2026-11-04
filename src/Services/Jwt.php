@@ -8,7 +8,7 @@ use Firebase\JWT\JWK as FirebaseJWK;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Illuminate\Support\Facades\Cache;
 use Snairbef\Laracloak\Contracts\Jwt as Contract;
-use Snairbef\Laracloak\Exceptions\OidcException;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 use Snairbef\Laracloak\Http\Client;
 
 final class Jwt implements Contract
@@ -28,28 +28,20 @@ final class Jwt implements Contract
         try {
             return $this->decode($token);
         } catch (\Throwable $e) {
-            throw OidcException::authentication(
-                'Invalid OIDC ID token.',
-                $e,
-            );
+            throw new AuthenticationException(message: 'Invalid OIDC ID token.', previous: $e);
         }
     }
 
     public function logout(string $token): array
     {
         if (trim($token) === '') {
-            throw OidcException::authentication(
-                'OIDC logout token is missing.',
-            );
+            throw new AuthenticationException('OIDC logout token is missing.');
         }
 
         try {
             $claims = (array) $this->decode($token);
         } catch (\Throwable $e) {
-            throw OidcException::authentication(
-                'Invalid OIDC logout token.',
-                $e,
-            );
+            throw new AuthenticationException(message: 'Invalid OIDC logout token.', previous: $e);
         }
 
         $this->event($claims);
@@ -113,10 +105,7 @@ final class Jwt implements Contract
         try {
             FirebaseJWK::parseKeySet($jwks);
         } catch (\Throwable $e) {
-            throw OidcException::authentication(
-                'Invalid OIDC JWKS.',
-                $e,
-            );
+            throw new AuthenticationException(message: 'Invalid OIDC JWKS.', previous: $e);
         }
 
         return $jwks;
@@ -176,17 +165,13 @@ final class Jwt implements Contract
         $events = $claims['events'] ?? null;
 
         if (! is_object($events) && ! is_array($events)) {
-            throw OidcException::authentication(
-                'Invalid OIDC logout event.',
-            );
+            throw new AuthenticationException('Invalid OIDC logout event.');
         }
 
         $events = (array) $events;
 
         if (! array_key_exists(self::EVENT, $events)) {
-            throw OidcException::authentication(
-                'Invalid OIDC logout event.',
-            );
+            throw new AuthenticationException('Invalid OIDC logout event.');
         }
     }
 
@@ -195,17 +180,13 @@ final class Jwt implements Contract
         $actual = $claims['iss'] ?? null;
 
         if (! is_string($actual) || $actual === '') {
-            throw OidcException::authentication(
-                'OIDC logout issuer is missing.',
-            );
+            throw new AuthenticationException('OIDC logout issuer is missing.');
         }
 
         $expected = $this->discovery->get('issuer');
 
         if (! hash_equals($expected, $actual)) {
-            throw OidcException::authentication(
-                'Invalid OIDC logout issuer.',
-            );
+            throw new AuthenticationException('Invalid OIDC logout issuer.');
         }
     }
 
@@ -230,9 +211,7 @@ final class Jwt implements Contract
             }
         }
 
-        throw OidcException::authentication(
-            'Invalid OIDC logout audience.',
-        );
+        throw new AuthenticationException('Invalid OIDC logout audience.');
     }
 
     private function subject(array $claims): void
@@ -240,9 +219,7 @@ final class Jwt implements Contract
         $subject = $claims['sub'] ?? null;
 
         if (! is_string($subject) || $subject === '') {
-            throw OidcException::authentication(
-                'OIDC logout subject is missing.',
-            );
+            throw new AuthenticationException('OIDC logout subject is missing.');
         }
     }
 
