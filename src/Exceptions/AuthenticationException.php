@@ -7,6 +7,4 @@ namespace Snairbef\Laracloak\Exceptions;
 use RuntimeException;
 use Snairbef\Laracloak\Contracts\LaracloakException;
 
-class AuthenticationException extends RuntimeException implements LaracloakException
-{
-}
+class AuthenticationException extends RuntimeException implements LaracloakException {}

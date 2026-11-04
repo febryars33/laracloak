@@ -23,7 +23,7 @@ it('creates authentication exceptions', function () {
 
 it('creates HTTP exceptions with status', function () {
     Http::fake([
-        '*' => Http::response([], 401)
+        '*' => Http::response([], 401),
     ]);
 
     $response = Http::get('https://example.com');

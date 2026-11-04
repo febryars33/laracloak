@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Http;
 use Snairbef\Laracloak\Exceptions\HttpException;
 use Snairbef\Laracloak\Http\Client;

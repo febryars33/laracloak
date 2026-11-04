@@ -8,9 +8,5 @@ use Throwable;
 
 /**
  * Interface LaracloakException
- *
- * @package Snairbef\Laracloak\Contracts
  */
-interface LaracloakException extends Throwable
-{
-}
+interface LaracloakException extends Throwable {}

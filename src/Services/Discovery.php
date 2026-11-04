@@ -52,7 +52,7 @@ final class Discovery implements Contract
             ! is_string($issuer)
             || trim($issuer) === ''
         ) {
-            throw new ConfigurationException("OIDC issuer is not configured.");
+            throw new ConfigurationException('OIDC issuer is not configured.');
         }
 
         $issuer = rtrim(
@@ -74,7 +74,7 @@ final class Discovery implements Contract
         $document = $response->json();
 
         if (! is_array($document)) {
-            throw new ConfigurationException("Invalid OIDC discovery response");
+            throw new ConfigurationException('Invalid OIDC discovery response');
         }
 
         return $document;
