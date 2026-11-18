@@ -8,7 +8,6 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Session\Store;
-use Illuminate\Support\Facades\Log;
 use Snairbef\Laracloak\Contracts\Identity;
 use Snairbef\Laracloak\Contracts\Revocation;
 use Snairbef\Laracloak\Contracts\UserResolver;
