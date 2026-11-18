@@ -44,7 +44,8 @@ final class LaracloakServiceProvider extends ServiceProvider
             'laracloak',
         );
 
-        $this->singletons();
+        $this->services();
+        $this->contracts();
     }
 
     /**
@@ -60,14 +61,12 @@ final class LaracloakServiceProvider extends ServiceProvider
         Authenticate::redirectUsing(
             fn () => route('laracloak.login'),
         );
-
-        $this->contracts();
     }
 
     /**
-     * Register package singletons.
+     * Register package services.
      */
-    private function singletons(): void
+    private function services(): void
     {
         foreach (
             [
@@ -76,14 +75,21 @@ final class LaracloakServiceProvider extends ServiceProvider
                 Token::class,
                 Userinfo::class,
                 Jwt::class,
-                Identity::class,
                 Revocation::class,
                 State::class,
                 Pkce::class,
-                Oidc::class,
             ] as $service
         ) {
             $this->app->singleton($service);
+        }
+
+        foreach (
+            [
+                Identity::class,
+                Oidc::class,
+            ] as $service
+        ) {
+            $this->app->scoped($service);
         }
     }
 
