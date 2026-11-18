@@ -209,6 +209,11 @@ it('revokes the subject during back-channel logout', function () {
         ->once()
         ->with('subject-123');
 
+    $revocation
+        ->shouldReceive('revoke')
+        ->once()
+        ->with('legacy:subject-123');
+
     oidcService(
         jwt: $jwt,
         revocation: $revocation,
@@ -232,6 +237,11 @@ it('revokes the sid during back-channel logout', function () {
         ->shouldReceive('revoke')
         ->once()
         ->with('session-device-1');
+
+    $revocation
+        ->shouldReceive('revoke')
+        ->once()
+        ->with('subject-123');
 
     $revocation
         ->shouldReceive('revoke')
