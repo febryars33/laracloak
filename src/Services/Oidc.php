@@ -320,7 +320,7 @@ final class Oidc implements Contract
             $this->revocation->revoke('legacy:'.trim($subject));
         }
 
-        Log::debug('Laracloak backchannel revocation check.', [
+        Log::info('Laracloak backchannel revocation check.', [
             'sid' => $sid,
             'subject' => $subject,
             'sid_revoked' => is_string($sid) && trim($sid) !== ''
