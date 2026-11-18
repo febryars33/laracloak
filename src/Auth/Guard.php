@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Session\Store;
+use Illuminate\Support\Facades\Log;
 use Snairbef\Laracloak\Contracts\Identity;
 use Snairbef\Laracloak\Contracts\Revocation;
 use Snairbef\Laracloak\Contracts\UserResolver;
@@ -78,6 +79,17 @@ final class Guard implements StatefulGuard
         if ($this->revoked($subject, $sid)) {
             return $this->clear();
         }
+
+        Log::debug('Laracloak guard diagnostic.', [
+            'subject' => $subject ?? null,
+            'sid' => $sid ?? null,
+            'subject_revoked' => $subject !== null
+                ? $this->revocation->revoked($subject)
+                : null,
+            'sid_revoked' => $sid !== null
+                ? $this->revocation->revoked($sid)
+                : null,
+        ]);
 
         return $this->user = $this->resolver->resolve(
             $attributes,
