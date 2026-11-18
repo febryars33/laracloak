@@ -78,16 +78,6 @@ final class Guard implements StatefulGuard
 
         $sid = $this->sid();
 
-        Log::info('Laracloak guard revocation check.', [
-            'subject' => $subject,
-            'sid' => $sid,
-            'subject_revoked' => $this->revocation->revoked($subject),
-            'legacy_revoked' => $this->revocation->revoked('legacy:'.$subject),
-            'sid_revoked' => $sid !== null
-                ? $this->revocation->revoked($sid)
-                : null,
-        ]);
-
         if ($this->revoked($subject, $sid)) {
             return $this->clear();
         }
