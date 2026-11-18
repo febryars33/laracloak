@@ -59,11 +59,7 @@ final class Guard implements StatefulGuard
 
         $sid = $this->sid();
 
-        if ($sid !== null && $this->revocation->revoked($sid)) {
-            return $this->clear();
-        }
-
-        if ($this->revocation->revoked($subject)) {
+        if ($this->revoked($subject, $sid)) {
             return $this->clear();
         }
 
@@ -79,7 +75,7 @@ final class Guard implements StatefulGuard
             return $this->clear();
         }
 
-        if ($this->revocation->revoked($subject)) {
+        if ($this->revoked($subject, $sid)) {
             return $this->clear();
         }
 
@@ -185,6 +181,21 @@ final class Guard implements StatefulGuard
         return is_string($sid) && trim($sid) !== ''
             ? trim($sid)
             : null;
+    }
+
+    private function revoked(
+        string $subject,
+        ?string $sid,
+    ): bool {
+        if ($sid !== null && $this->revocation->revoked($sid)) {
+            return true;
+        }
+
+        if ($this->revocation->revoked($subject)) {
+            return true;
+        }
+
+        return $sid === null && $this->revocation->revoked('legacy:'.$subject);
     }
 
     private function clear(): null

@@ -182,6 +182,7 @@ final class Oidc implements Contract
         }
 
         $this->revocation->clear($subject);
+        $this->revocation->clear('legacy:'.$subject);
 
         $session->put(
             $this->key('token'),
@@ -308,23 +309,24 @@ final class Oidc implements Contract
         $claims = $this->jwt->logout($token);
 
         $sid = $claims['sid'] ?? null;
-
-        if (is_string($sid) && $sid !== '') {
-            $this->revocation->revoke($sid);
-
-            return;
-        }
-
         $subject = $claims['sub'] ?? null;
 
-        if (
-            ! is_string($subject)
-            || $subject === ''
-        ) {
-            return;
+        if (is_string($sid) && trim($sid) !== '') {
+            $this->revocation->revoke(trim($sid));
         }
 
-        $this->revocation->revoke($subject);
+        if (is_string($subject) && trim($subject) !== '') {
+            if (is_string($sid) && trim($sid) !== '') {
+                $this->revocation->revoke('legacy:'.trim($subject));
+            } else {
+                $this->revocation->revoke(trim($subject));
+            }
+        }
+
+        Log::info('Laracloak OIDC back-channel logout processed.', [
+            'sid' => is_string($sid) ? trim($sid) : null,
+            'subject' => is_string($subject) ? trim($subject) : null,
+        ]);
     }
 
     private function state(

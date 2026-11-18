@@ -79,6 +79,12 @@ it('resolves the authenticated user', function () {
         ->with('subject-123')
         ->andReturnFalse();
 
+    $revocation
+        ->shouldReceive('revoked')
+        ->twice()
+        ->with('legacy:subject-123')
+        ->andReturnFalse();
+
     $resolver
         ->shouldReceive('resolve')
         ->once()
@@ -114,6 +120,42 @@ it('clears identity when subject is revoked', function () {
         ->shouldReceive('revoked')
         ->once()
         ->with('subject-123')
+        ->andReturnTrue();
+
+    $identity
+        ->shouldReceive('clear')
+        ->once();
+
+    $guard = guard(
+        identity: $identity,
+        revocation: $revocation,
+    );
+
+    expect($guard->user())
+        ->toBeNull();
+});
+
+it('clears identity when legacy session is revoked', function () {
+    $identity = Mockery::mock(Identity::class);
+    $revocation = Mockery::mock(Revocation::class);
+
+    $identity
+        ->shouldReceive('current')
+        ->once()
+        ->andReturn([
+            'sub' => 'subject-123',
+        ]);
+
+    $revocation
+        ->shouldReceive('revoked')
+        ->once()
+        ->with('subject-123')
+        ->andReturnFalse();
+
+    $revocation
+        ->shouldReceive('revoked')
+        ->once()
+        ->with('legacy:subject-123')
         ->andReturnTrue();
 
     $identity
@@ -194,7 +236,7 @@ it('keeps identity when another sid is revoked', function () {
 
     $revocation
         ->shouldReceive('revoked')
-        ->once()
+        ->twice()
         ->with('session-device-laptop-b')
         ->andReturnFalse();
 

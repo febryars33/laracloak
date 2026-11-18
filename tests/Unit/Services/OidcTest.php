@@ -233,6 +233,34 @@ it('revokes the sid during back-channel logout', function () {
         ->once()
         ->with('session-device-1');
 
+    $revocation
+        ->shouldReceive('revoke')
+        ->once()
+        ->with('legacy:subject-123');
+
+    oidcService(
+        jwt: $jwt,
+        revocation: $revocation,
+    )->backchannel('logout-token');
+});
+
+it('revokes only the sid during back-channel logout when sub is missing', function () {
+    $jwt = Mockery::mock(Jwt::class);
+    $revocation = Mockery::mock(Revocation::class);
+
+    $jwt
+        ->shouldReceive('logout')
+        ->once()
+        ->with('logout-token')
+        ->andReturn([
+            'sid' => 'session-device-1',
+        ]);
+
+    $revocation
+        ->shouldReceive('revoke')
+        ->once()
+        ->with('session-device-1');
+
     oidcService(
         jwt: $jwt,
         revocation: $revocation,
