@@ -76,20 +76,21 @@ final class Guard implements StatefulGuard
             return $this->clear();
         }
 
-        if ($this->revoked($subject, $sid)) {
-            return $this->clear();
-        }
+        $sid = $this->sid();
 
-        Log::debug('Laracloak guard diagnostic.', [
-            'subject' => $subject ?? null,
-            'sid' => $sid ?? null,
-            'subject_revoked' => $subject !== null
-                ? $this->revocation->revoked($subject)
-                : null,
+        Log::debug('Laracloak guard revocation check.', [
+            'subject' => $subject,
+            'sid' => $sid,
+            'subject_revoked' => $this->revocation->revoked($subject),
+            'legacy_revoked' => $this->revocation->revoked('legacy:'.$subject),
             'sid_revoked' => $sid !== null
                 ? $this->revocation->revoked($sid)
                 : null,
         ]);
+
+        if ($this->revoked($subject, $sid)) {
+            return $this->clear();
+        }
 
         return $this->user = $this->resolver->resolve(
             $attributes,
