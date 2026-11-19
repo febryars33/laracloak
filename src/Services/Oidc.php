@@ -38,6 +38,7 @@ final class Oidc implements Contract
         $verifier = $this->pkce->generate();
 
         $flow = [
+            'id' => bin2hex(random_bytes(8)),
             'state' => $this->state->generate(),
             'nonce' => $this->state->generate(),
             'verifier' => $verifier,
@@ -54,9 +55,7 @@ final class Oidc implements Contract
         $session->save();
 
         Log::info('Laracloak OIDC login started.', [
-            'session' => $session->getId(),
-            'flow' => $session->has($this->key('flow')),
-            'state' => $flow['state'],
+            'flow_id' => $flow['id'],
         ]);
 
         $query = http_build_query([
@@ -92,24 +91,35 @@ final class Oidc implements Contract
             'state' => $request->query('state'),
         ]);
 
-        $flow = $session->get(
-            $this->key('flow'),
-        );
+        $flow = $session->get($this->key('flow'));
 
         if (! is_array($flow)) {
-            Log::error('Laracloak OIDC flow missing.', [
-                'session' => $session->getId(),
-                'session_key' => $this->key('flow'),
-                'session_data' => $session->all(),
-            ]);
+            Log::warning('Laracloak OIDC flow missing.');
 
-            throw new AuthenticationException('OIDC authentication session has expired.');
+            throw new AuthenticationException(
+                'OIDC authentication session has expired.',
+            );
         }
+
+        $flowId = is_string($flow['id'] ?? null)
+            ? $flow['id']
+            : 'unknown';
+
+        Log::info('Laracloak OIDC callback received.', [
+            'flow_id' => $flowId,
+            'has_state' => is_string($request->query('state')),
+            'has_code' => is_string($request->query('code')),
+            'has_error' => is_string($request->query('error')),
+        ]);
 
         $this->state(
             $request,
             $flow,
         );
+
+        Log::info('Laracloak OIDC state validated.', [
+            'flow_id' => $flowId,
+        ]);
 
         $code = $request->query('code');
 
@@ -129,10 +139,21 @@ final class Oidc implements Contract
             throw new AuthenticationException('Invalid OIDC authentication session.');
         }
 
+        Log::info('Laracloak OIDC token exchange started.', [
+            'flow_id' => $flowId,
+        ]);
+
         $tokens = $this->token->exchange(
             $code,
             $verifier,
         );
+
+        Log::info('Laracloak OIDC token exchange completed.', [
+            'flow_id' => $flowId,
+            'has_id_token' => is_string($tokens['id_token'] ?? null),
+            'has_access_token' => is_string($tokens['access_token'] ?? null),
+            'has_refresh_token' => is_string($tokens['refresh_token'] ?? null),
+        ]);
 
         $idToken = $tokens['id_token'] ?? null;
 
@@ -144,10 +165,18 @@ final class Oidc implements Contract
             $idToken,
         );
 
+        Log::info('Laracloak OIDC ID token validated.', [
+            'flow_id' => $flowId,
+        ]);
+
         $this->nonce(
             $claims,
             $nonce,
         );
+
+        Log::info('Laracloak OIDC nonce validated.', [
+            'flow_id' => $flowId,
+        ]);
 
         $access = $tokens['access_token'] ?? null;
 
@@ -155,12 +184,20 @@ final class Oidc implements Contract
             throw new AuthenticationException('OIDC access token is missing.');
         }
 
+        Log::info('Laracloak OIDC UserInfo request started.', [
+            'flow_id' => $flowId,
+        ]);
+
         $profile = $this->userinfo->get($access);
 
         $this->subject(
             $claims,
             $profile,
         );
+
+        Log::info('Laracloak OIDC UserInfo validated.', [
+            'flow_id' => $flowId,
+        ]);
 
         $subject = (string) $profile['sub'];
 
@@ -206,11 +243,13 @@ final class Oidc implements Contract
         $session->save();
 
         Log::info('Laracloak OIDC callback completed.', [
-            'session' => $session->getId(),
-            'subject' => $subject,
-            'sid' => $sid,
+            'flow_id' => $flowId,
             'authenticated' => $session->has(
                 $this->key('user'),
+            ),
+            'has_sid' => $sid !== null,
+            'has_refresh_token' => is_string(
+                $tokens['refresh_token'] ?? null,
             ),
         ]);
 
@@ -226,16 +265,12 @@ final class Oidc implements Contract
             ? $this->logoutUrl($tokens)
             : null;
 
-        Log::info('Laracloak OIDC logout.', [
-            'session' => $request->session()->getId(),
+        Log::info('Laracloak OIDC logout started.', [
             'has_tokens' => is_array($tokens),
-            'has_url' => $url !== null,
-            'endpoint' => is_string($url)
-                ? parse_url($url, PHP_URL_PATH)
-                : null,
-            'host' => is_string($url)
-                ? parse_url($url, PHP_URL_HOST)
-                : null,
+            'redirect_to_idp' => $url !== null,
+            'has_id_token_hint' => is_string(
+                $tokens['id_token'] ?? null,
+            ),
         ]);
 
         $this->clear($request);
@@ -321,8 +356,8 @@ final class Oidc implements Contract
         }
 
         Log::info('Laracloak OIDC back-channel logout processed.', [
-            'sid' => is_string($sid) ? trim($sid) : null,
-            'subject' => is_string($subject) ? trim($subject) : null,
+            'has_sid' => is_string($sid) && trim($sid) !== '',
+            'has_subject' => is_string($subject) && trim($subject) !== '',
         ]);
     }
 

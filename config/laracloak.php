@@ -39,6 +39,10 @@ return [
         ),
     ],
 
+    'jwt' => [
+        'leeway' => 5,
+    ],
+
     'lock' => [
         'seconds' => env(
             'LARACLOAK_LOCK_SECONDS',

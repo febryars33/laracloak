@@ -55,20 +55,25 @@ final class Jwt implements Contract
     private function decode(string $token): object
     {
         $kid = $this->kid($token);
-
         $jwks = $this->keys();
 
-        if (
-            $kid !== null
-            && ! $this->contains($jwks, $kid)
-        ) {
+        if ($kid !== null && ! $this->contains($jwks, $kid)) {
             $jwks = $this->keys(true);
         }
 
-        return FirebaseJWT::decode(
-            $token,
-            FirebaseJWK::parseKeySet($jwks),
-        );
+        $leeway = max(0, (int) config('laracloak.jwt.leeway', 5));
+        $previous = FirebaseJWT::$leeway;
+
+        FirebaseJWT::$leeway = $leeway;
+
+        try {
+            return FirebaseJWT::decode(
+                $token,
+                FirebaseJWK::parseKeySet($jwks),
+            );
+        } finally {
+            FirebaseJWT::$leeway = $previous;
+        }
     }
 
     private function keys(bool $refresh = false): array

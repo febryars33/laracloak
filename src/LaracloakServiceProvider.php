@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Snairbef\Laracloak;
 
+use Firebase\JWT\JWT as FirebaseJWT;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
@@ -53,6 +54,11 @@ final class LaracloakServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        FirebaseJWT::$leeway = max(
+            0,
+            (int) config('laracloak.jwt.leeway', 5),
+        );
+
         $this->publish();
         $this->routes();
         $this->guard();
@@ -72,7 +78,6 @@ final class LaracloakServiceProvider extends ServiceProvider
             [
                 Client::class,
                 Discovery::class,
-                Token::class,
                 Userinfo::class,
                 Jwt::class,
                 Revocation::class,
@@ -85,6 +90,7 @@ final class LaracloakServiceProvider extends ServiceProvider
 
         foreach (
             [
+                Token::class,
                 Identity::class,
                 Oidc::class,
             ] as $service
