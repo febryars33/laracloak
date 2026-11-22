@@ -1,9 +1,12 @@
 <?php
 
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Snairbef\Laracloak\Auth\Guard;
 use Snairbef\Laracloak\Auth\Provider;
+use Snairbef\Laracloak\LaracloakServiceProvider;
 use Snairbef\Laracloak\Services\Discovery;
 use Snairbef\Laracloak\Services\Identity;
 use Snairbef\Laracloak\Services\Jwt;
@@ -71,5 +74,17 @@ it('uses a relative login redirect for unauthenticated requests', function () {
         ->middleware('auth');
 
     $this->get('/test/protected')
+        ->assertRedirect('/auth/login');
+});
+
+it('overrides the framework login redirect when the HTTP kernel is already resolved', function () {
+    app()->make(HttpKernel::class);
+    Authenticate::redirectUsing(static fn () => route('login'));
+    (new LaracloakServiceProvider(app()))->boot();
+
+    Route::get('/test/protected-after-kernel-resolution', fn () => 'protected')
+        ->middleware('auth');
+
+    $this->get('/test/protected-after-kernel-resolution')
         ->assertRedirect('/auth/login');
 });

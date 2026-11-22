@@ -67,11 +67,17 @@ final class LaracloakServiceProvider extends ServiceProvider
         $this->guard();
         $this->provider();
 
+        $redirect = static fn () => route(
+            'laracloak.login',
+            [],
+            false,
+        );
+
+        Authenticate::redirectUsing($redirect);
+
         $this->app->afterResolving(
             HttpKernel::class,
-            static fn () => Authenticate::redirectUsing(
-                fn () => route('laracloak.login', [], false),
-            ),
+            static fn () => Authenticate::redirectUsing($redirect),
         );
     }
 
