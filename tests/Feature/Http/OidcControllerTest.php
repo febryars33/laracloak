@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Snairbef\Laracloak\Contracts\Oidc;
 use Snairbef\Laracloak\Exceptions\AuthenticationException;
@@ -98,16 +99,24 @@ it('accepts valid back-channel logout requests', function (): void {
 
 it('returns 400 for rejected back-channel logout requests', function (): void {
     $oidc = Mockery::mock(Oidc::class);
+    $exception = new AuthenticationException('Invalid OIDC logout token.');
 
     $oidc->shouldReceive('backchannel')
         ->once()
         ->with('invalid')
-        ->andThrow(new AuthenticationException('Invalid OIDC logout token.'));
+        ->andThrow($exception);
 
     $this->app->instance(
         Oidc::class,
         $oidc,
     );
+    Log::shouldReceive('warning')
+        ->once()
+        ->with('Laracloak back-channel logout rejected.', [
+            'exception' => AuthenticationException::class,
+            'reason' => 'Invalid OIDC logout token.',
+            'cause' => null,
+        ]);
 
     $this->post('/test/backchannel', [
         'logout_token' => 'invalid',

@@ -50,6 +50,10 @@ final class OidcController extends Controller
                 'Laracloak back-channel logout rejected.',
                 [
                     'exception' => $e::class,
+                    'reason' => $e->getMessage(),
+                    'cause' => $e->getPrevious() === null
+                        ? null
+                        : $e->getPrevious()::class,
                 ],
             );
 

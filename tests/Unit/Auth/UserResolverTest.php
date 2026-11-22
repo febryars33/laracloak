@@ -22,6 +22,7 @@ it('provisions a user from OIDC attributes', function () {
         'sub' => 'subject-123',
         'name' => 'Febry',
         'email' => 'febry@example.com',
+        'picture' => 'https://idp.example.test/profile.jpg',
     ]);
 
     expect($user)
@@ -31,10 +32,31 @@ it('provisions a user from OIDC attributes', function () {
         ->and($user->name)
         ->toBe('Febry')
         ->and($user->email)
-        ->toBe('febry@example.com');
+        ->toBe('febry@example.com')
+        ->and($user->picture)
+        ->toBe('https://idp.example.test/profile.jpg');
 
     expect(User::query()->count())
         ->toBe(1);
+});
+
+it('exposes the latest IdP picture without requiring a local picture column', function () {
+    User::query()->create([
+        'sub' => 'subject-123',
+        'name' => 'Old Name',
+        'email' => 'old@example.com',
+    ]);
+
+    $user = (new UserResolver)->resolve([
+        'sub' => 'subject-123',
+        'name' => 'Updated Name',
+        'picture' => 'https://idp.example.test/new-profile.jpg',
+    ]);
+
+    expect($user->picture)
+        ->toBe('https://idp.example.test/new-profile.jpg')
+        ->and(User::query()->first()->name)
+        ->toBe('Updated Name');
 });
 
 it('returns null when subject is missing', function () {

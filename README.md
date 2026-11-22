@@ -501,6 +501,12 @@ The `sub` claim returned by UserInfo must match the authenticated OIDC identity.
 
 This prevents an access token from being associated with a different OIDC subject.
 
+The local user's `name` and `email` fields are synchronized from UserInfo. The
+latest standard `picture` claim is exposed on `Auth::user()->picture` from the
+IdP profile without requiring a `picture` database column. UserInfo is refreshed
+according to `LARACLOAK_IDENTITY_TTL`; profile changes therefore appear on
+subsequent requests after that interval.
+
 ## Token Refresh
 
 Laracloak automatically refreshes an expired or near-expiry access token using the refresh token.

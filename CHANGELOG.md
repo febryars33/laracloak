@@ -2,6 +2,13 @@
 
 All notable changes to `laracloak` will be documented in this file.
 
+## v1.0.0-rc.4 - 2026-11-22
+
+- Log safe validation reasons when an OIDC Back-Channel Logout token is rejected.
+- Expose the latest IdP `picture` claim on the authenticated Laravel user without requiring a local database column.
+
+**Full Changelog**: https://github.com/febryars33/laracloak/compare/v1.0.0-rc.3...v1.0.0-rc.4
+
 ## v1.0.0-rc.3 - 2026-11-22
 
 - Fix guest redirects when Laravel resolves the HTTP kernel before package providers boot.

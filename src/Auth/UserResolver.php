@@ -76,7 +76,7 @@ final class UserResolver implements Contract
             $user->save();
         }
 
-        return $user;
+        return $this->profile($user, $attributes);
     }
 
     private function create(
@@ -91,7 +91,7 @@ final class UserResolver implements Contract
 
         $user->save();
 
-        return $user;
+        return $this->profile($user, $attributes);
     }
 
     private function attributes(array $attributes): array
@@ -101,5 +101,16 @@ final class UserResolver implements Contract
             'name' => $attributes['name'] ?? null,
             'email' => $attributes['email'] ?? null,
         ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    private function profile(
+        Model&Authenticatable $user,
+        array $attributes,
+    ): Model&Authenticatable {
+        if (array_key_exists('picture', $attributes)) {
+            $user->setAttribute('picture', $attributes['picture']);
+        }
+
+        return $user;
     }
 }
