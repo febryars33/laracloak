@@ -47,7 +47,7 @@ Laracloak is provider-agnostic. It does not require Keycloak and can work with a
 ## Requirements
 
 - PHP 8.3+
-- Laravel 11.x, 12.x, or 13.x
+- Laravel 12.x or 13.x
 - An OpenID Connect Provider
 - PHP OpenSSL extension
 - PHP JSON extension
@@ -483,9 +483,9 @@ Auth::user()->sub; // user-123
 
 ### Laravel Compatibility
 
-The package declares compatibility with Laravel 11, 12, and 13 through its
+The package declares compatibility with Laravel 12 and 13 through its
 `illuminate/contracts` constraint. The CI matrix runs the package test suite
-against all three Laravel major versions.
+against both Laravel major versions.
 
 ## UserInfo
 
