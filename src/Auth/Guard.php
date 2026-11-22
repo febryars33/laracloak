@@ -93,7 +93,7 @@ final class Guard implements StatefulGuard
 
     public function validate(array $credentials = []): bool
     {
-        return $this->user() !== null;
+        return false;
     }
 
     public function hasUser(): bool
@@ -121,7 +121,7 @@ final class Guard implements StatefulGuard
         array $credentials = [],
         $remember = false,
     ): bool {
-        return $this->check();
+        return false;
     }
 
     public function loginUsingId(
@@ -141,7 +141,7 @@ final class Guard implements StatefulGuard
 
     public function once(array $credentials = []): bool
     {
-        return $this->validate($credentials);
+        return false;
     }
 
     public function onceUsingId(

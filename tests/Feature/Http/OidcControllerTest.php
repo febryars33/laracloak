@@ -96,7 +96,7 @@ it('accepts valid back-channel logout requests', function (): void {
         ->assertExactJson([]);
 });
 
-it('returns 200 for rejected back-channel logout requests', function (): void {
+it('returns 400 for rejected back-channel logout requests', function (): void {
     $oidc = Mockery::mock(Oidc::class);
 
     $oidc->shouldReceive('backchannel')
@@ -112,6 +112,23 @@ it('returns 200 for rejected back-channel logout requests', function (): void {
     $this->post('/test/backchannel', [
         'logout_token' => 'invalid',
     ])
-        ->assertOk()
-        ->assertExactJson([]);
+        ->assertBadRequest();
+});
+
+it('returns a server error when back-channel logout processing fails', function (): void {
+    $oidc = Mockery::mock(Oidc::class);
+
+    $oidc->shouldReceive('backchannel')
+        ->once()
+        ->with('logout-token')
+        ->andThrow(new RuntimeException('Cache unavailable.'));
+
+    $this->app->instance(
+        Oidc::class,
+        $oidc,
+    );
+
+    $this->post('/test/backchannel', [
+        'logout_token' => 'logout-token',
+    ])->assertInternalServerError();
 });

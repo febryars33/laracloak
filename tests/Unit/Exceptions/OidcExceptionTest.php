@@ -36,6 +36,21 @@ it('creates HTTP exceptions with status', function () {
         ->toBe('OIDC provider returned HTTP status 401.');
 });
 
+it('identifies OAuth errors without treating invalid client credentials as an expired token', function () {
+    Http::fake([
+        '*' => Http::response(['error' => 'invalid_client'], 401),
+    ]);
+
+    $exception = new HttpException(
+        Http::get('https://example.com'),
+    );
+
+    expect($exception->getErrorCode())
+        ->toBe('invalid_client')
+        ->and($exception->unauthenticated())
+        ->toBeFalse();
+});
+
 it('preserves previous exceptions', function () {
     $previous = new RuntimeException('Previous.');
 

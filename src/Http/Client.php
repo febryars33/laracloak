@@ -52,12 +52,17 @@ final class Client
     public function post(
         string $url,
         array $data = [],
+        array $headers = [],
     ): Response {
         $this->validate($url);
 
-        return $this->request()
-            ->asForm()
-            ->post($url, $data);
+        $request = $this->request()->asForm();
+
+        if ($headers !== []) {
+            $request = $request->withHeaders($headers);
+        }
+
+        return $this->send($request->post($url, $data));
     }
 
     private function send(Response $response): Response

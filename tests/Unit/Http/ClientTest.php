@@ -100,3 +100,18 @@ it('throws OIDC exceptions for failed HTTP responses', function () {
 
     $client->get('https://provider.test/test');
 })->throws(HttpException::class);
+
+it('throws OIDC exceptions for failed POST responses', function () {
+    Http::fake([
+        'https://provider.test/*' => Http::response([], 429),
+    ]);
+
+    $client = new Client;
+
+    try {
+        $client->post('https://provider.test/oauth/token');
+        $this->fail('Expected HttpException.');
+    } catch (HttpException $exception) {
+        expect($exception->getStatusCode())->toBe(429);
+    }
+});

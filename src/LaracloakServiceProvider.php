@@ -7,6 +7,7 @@ namespace Snairbef\Laracloak;
 use Firebase\JWT\JWT as FirebaseJWT;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Snairbef\Laracloak\Auth\Guard;
@@ -17,6 +18,7 @@ use Snairbef\Laracloak\Contracts\Identity as ContractsIdentity;
 use Snairbef\Laracloak\Contracts\Jwt as ContractsJwt;
 use Snairbef\Laracloak\Contracts\Oidc as ContractsOidc;
 use Snairbef\Laracloak\Contracts\Pkce as ContractsPkce;
+use Snairbef\Laracloak\Contracts\Replay as ContractsReplay;
 use Snairbef\Laracloak\Contracts\Revocation as ContractsRevocation;
 use Snairbef\Laracloak\Contracts\State as ContractsState;
 use Snairbef\Laracloak\Contracts\Token as ContractsToken;
@@ -27,6 +29,7 @@ use Snairbef\Laracloak\Services\Discovery;
 use Snairbef\Laracloak\Services\Identity;
 use Snairbef\Laracloak\Services\Jwt;
 use Snairbef\Laracloak\Services\Oidc;
+use Snairbef\Laracloak\Services\Replay;
 use Snairbef\Laracloak\Services\Revocation;
 use Snairbef\Laracloak\Services\Token;
 use Snairbef\Laracloak\Services\Userinfo;
@@ -64,8 +67,11 @@ final class LaracloakServiceProvider extends ServiceProvider
         $this->guard();
         $this->provider();
 
-        Authenticate::redirectUsing(
-            fn () => route('laracloak.login'),
+        $this->app->afterResolving(
+            HttpKernel::class,
+            static fn () => Authenticate::redirectUsing(
+                fn () => route('laracloak.login', [], false),
+            ),
         );
     }
 
@@ -81,6 +87,7 @@ final class LaracloakServiceProvider extends ServiceProvider
                 Userinfo::class,
                 Jwt::class,
                 Revocation::class,
+                Replay::class,
                 State::class,
                 Pkce::class,
             ] as $service
@@ -162,6 +169,7 @@ final class LaracloakServiceProvider extends ServiceProvider
             ): Provider {
                 return new Provider(
                     $app->make(Identity::class),
+                    $app->make(ContractsUserResolver::class),
                 );
             },
         );
@@ -192,6 +200,11 @@ final class LaracloakServiceProvider extends ServiceProvider
         $this->app->alias(
             Pkce::class,
             ContractsPkce::class,
+        );
+
+        $this->app->alias(
+            Replay::class,
+            ContractsReplay::class,
         );
 
         $this->app->alias(

@@ -23,6 +23,8 @@ Laracloak is provider-agnostic. It does not require Keycloak and can work with a
 - Audience validation
 - Nonce validation
 - Authorization state validation
+- Expiring, one-time authorization flows with multi-tab support
+- Session ID regeneration after authentication
 - UserInfo endpoint integration
 - ID Token subject and UserInfo subject validation
 - Automatic access-token refresh
@@ -45,7 +47,7 @@ Laracloak is provider-agnostic. It does not require Keycloak and can work with a
 ## Requirements
 
 - PHP 8.3+
-- Laravel 13.x
+- Laravel 11.x, 12.x, or 13.x
 - An OpenID Connect Provider
 - PHP OpenSSL extension
 - PHP JSON extension
@@ -130,6 +132,32 @@ return [
         ),
     ],
 
+    'flow' => [
+        'ttl' => env(
+            'LARACLOAK_FLOW_TTL',
+            600,
+        ),
+
+        'limit' => env(
+            'LARACLOAK_FLOW_LIMIT',
+            5,
+        ),
+    ],
+
+    'jwt' => [
+        'leeway' => 5,
+        'algorithms' => [
+            'RS256',
+        ],
+    ],
+
+    'cache' => [
+        'ttl' => env(
+            'LARACLOAK_CACHE_TTL',
+            3600,
+        ),
+    ],
+
     'user' => [
         'model' => env(
             'LARACLOAK_USER_MODEL',
@@ -147,6 +175,7 @@ return [
         'token' => 'laracloak.token',
         'user' => 'laracloak.user',
         'identity_at' => 'laracloak.identity_at',
+        'sid' => 'laracloak.sid',
     ],
 
     'logout_endpoint' => env(
@@ -176,6 +205,8 @@ LARACLOAK_REDIRECT_URI=http://localhost:8001/auth/callback
 LARACLOAK_AUTHENTICATION_METHOD=client_secret_post
 
 LARACLOAK_IDENTITY_TTL=30
+LARACLOAK_FLOW_TTL=600
+LARACLOAK_FLOW_LIMIT=5
 
 LARACLOAK_USER_MODEL=App\\Models\\User
 LARACLOAK_USER_PROVISION=true
@@ -186,6 +217,15 @@ LARACLOAK_POST_LOGOUT_REDIRECT_URI=http://localhost:8001/
 ```
 
 The `LARACLOAK_ISSUER` must point to the OIDC provider's issuer.
+Production issuers and discovered endpoints must use HTTPS. HTTP is allowed
+only for loopback development hosts (`localhost`, `127.0.0.1`, and `::1`).
+
+Supported confidential-client token endpoint authentication methods are
+`client_secret_post` and `client_secret_basic`.
+
+The flow TTL controls how long a pending authorization response remains valid.
+The flow limit caps concurrent login attempts per browser session, which allows
+multiple tabs without keeping stale authorization state indefinitely.
 
 Laracloak automatically discovers the provider configuration from:
 
@@ -247,6 +287,14 @@ Auth::guard('laracloak')->user();
 
 Auth::guard('laracloak')->id();
 ```
+
+The guard delegates user resolution to the configured Eloquent model. `Auth::id()`
+therefore returns the local model's primary key; the provider's OIDC `sub` is
+stored separately on the user record.
+
+Password-based APIs such as `Auth::attempt()` and `Auth::validate()` return
+`false`: credentials are authenticated by the OIDC provider during the
+redirect-based authorization flow. Remember-me authentication is not supported.
 
 The package also provides the `oidc()` guard indicator:
 
@@ -433,6 +481,12 @@ The OIDC identity is represented by:
 Auth::user()->sub; // user-123
 ```
 
+### Laravel Compatibility
+
+The package declares compatibility with Laravel 11, 12, and 13 through its
+`illuminate/contracts` constraint. The CI matrix runs the package test suite
+against all three Laravel major versions.
+
 ## UserInfo
 
 After authentication, Laracloak retrieves the authenticated user's profile from the provider's UserInfo endpoint.
@@ -547,8 +601,11 @@ Laracloak validates:
 - JWKS key
 - Issuer
 - Audience
-- Subject
+- Required subject or session identifier
+- Issued-at and expiration time
+- Non-empty token identifier (`jti`)
 - Back-Channel Logout event
+- Absence of the prohibited nonce claim
 
 The required logout event is:
 
@@ -556,9 +613,17 @@ The required logout event is:
 http://schemas.openid.net/event/backchannel-logout
 ```
 
-After successful validation, the OIDC subject is revoked locally.
+After successful validation, a logout token's `jti` is recorded to reject replays.
+When the token contains a `sid`, only that session is revoked; otherwise its
+`sub` and legacy subject key are revoked. Invalid tokens receive HTTP 400, while
+cache or revocation failures remain server errors so the provider can retry.
 
-Subsequent authentication checks will reject the revoked subject.
+Subsequent authentication checks will reject the affected session or subject.
+
+Replay protection uses Laravel's configured cache store and atomic cache locks.
+Use a shared, lock-capable cache store when running multiple application
+instances; the replay record is retained through the token expiration plus the
+configured JWT clock leeway.
 
 ## Subject-Based Revocation
 
@@ -611,7 +676,10 @@ The original verifier is never sent in the authorization request.
 
 ### ID Token Validation
 
-ID Tokens are validated against the provider's JWKS.
+ID Tokens are validated against the provider's JWKS. The default accepted
+signing algorithm is `RS256`; configure `laracloak.jwt.algorithms` to
+explicitly allow other supported asymmetric algorithms when required by
+your provider.
 
 Validation includes:
 
@@ -619,6 +687,8 @@ Validation includes:
 - Issuer
 - Audience
 - Expiration
+- Issued-at time
+- Authorized party when multiple audiences are present
 - Nonce
 - Subject
 

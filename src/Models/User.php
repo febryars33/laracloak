@@ -18,22 +18,6 @@ class User extends AuthUser implements Arrayable, ArrayAccess, Authenticatable, 
     protected $guarded = [];
 
     /**
-     * Get the authentication identifier name.
-     */
-    public function getAuthIdentifierName(): string
-    {
-        return 'sub';
-    }
-
-    /**
-     * Get the authentication identifier.
-     */
-    public function getAuthIdentifier(): mixed
-    {
-        return $this->getAttribute($this->getAuthIdentifierName());
-    }
-
-    /**
      * Get the authentication password name.
      */
     public function getAuthPasswordName(): string

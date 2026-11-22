@@ -39,8 +39,30 @@ return [
         ),
     ],
 
+    'flow' => [
+        'ttl' => env(
+            'LARACLOAK_FLOW_TTL',
+            600,
+        ),
+
+        'limit' => env(
+            'LARACLOAK_FLOW_LIMIT',
+            5,
+        ),
+    ],
+
     'jwt' => [
         'leeway' => 5,
+        'algorithms' => [
+            'RS256',
+        ],
+    ],
+
+    'cache' => [
+        'ttl' => env(
+            'LARACLOAK_CACHE_TTL',
+            3600,
+        ),
     ],
 
     'lock' => [

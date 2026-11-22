@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Snairbef\Laracloak\Auth\Guard;
 use Snairbef\Laracloak\Auth\Provider;
 use Snairbef\Laracloak\Services\Discovery;
@@ -63,4 +64,12 @@ it('uses the native auth redirect callback', function () {
         ->toBe(
             config('app.url').'/auth/login',
         );
+});
+
+it('uses a relative login redirect for unauthenticated requests', function () {
+    Route::get('/test/protected', fn () => 'protected')
+        ->middleware('auth');
+
+    $this->get('/test/protected')
+        ->assertRedirect('/auth/login');
 });

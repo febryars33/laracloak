@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use Snairbef\Laracloak\Contracts\Oidc;
+use Snairbef\Laracloak\Exceptions\AuthenticationException;
 
 final class OidcController extends Controller
 {
@@ -44,16 +45,15 @@ final class OidcController extends Controller
             );
 
             return response()->json(null, 200);
-        } catch (\Throwable $e) {
+        } catch (AuthenticationException $e) {
             Log::warning(
                 'Laracloak back-channel logout rejected.',
                 [
                     'exception' => $e::class,
-                    'message' => $e->getMessage(),
                 ],
             );
 
-            return response()->json(null, 200);
+            return response()->json(null, 400);
         }
     }
 }

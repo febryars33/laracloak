@@ -8,6 +8,9 @@ it('retrieves userinfo', function () {
     Http::fake([
         'http://localhost:8000/.well-known/openid-configuration' => Http::response([
             'issuer' => 'http://localhost:8000',
+            'authorization_endpoint' => 'http://localhost:8000/oauth/authorize',
+            'token_endpoint' => 'http://localhost:8000/oauth/token',
+            'jwks_uri' => 'http://localhost:8000/oauth/jwks',
             'userinfo_endpoint' => 'http://localhost:8000/oauth/userinfo',
         ]),
 
@@ -37,6 +40,10 @@ it('rejects an empty access token', function () {
 it('rejects invalid userinfo responses', function () {
     Http::fake([
         'http://localhost:8000/.well-known/openid-configuration' => Http::response([
+            'issuer' => 'http://localhost:8000',
+            'authorization_endpoint' => 'http://localhost:8000/oauth/authorize',
+            'token_endpoint' => 'http://localhost:8000/oauth/token',
+            'jwks_uri' => 'http://localhost:8000/oauth/jwks',
             'userinfo_endpoint' => 'http://localhost:8000/oauth/userinfo',
         ]),
 

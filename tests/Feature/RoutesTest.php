@@ -6,8 +6,10 @@ it('registers the login route', function () {
     // Mock the HTTP request to prevent actual external calls
     Http::fake([
         'http://localhost:8000/.well-known/openid-configuration' => Http::response([
+            'issuer' => 'http://localhost:8000',
             'authorization_endpoint' => 'https://provider.example.com/authorize',
             'token_endpoint' => 'https://provider.example.com/token',
+            'jwks_uri' => 'https://provider.example.com/jwks',
             'userinfo_endpoint' => 'https://provider.example.com/userinfo',
         ]),
     ]);
@@ -33,5 +35,5 @@ it('registers POST logout', function () {
 
 it('registers back-channel logout', function () {
     $this->post('/auth/backchannel-logout')
-        ->assertOk();
+        ->assertBadRequest();
 });

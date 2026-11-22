@@ -7,12 +7,13 @@ namespace Snairbef\Laracloak\Auth;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
 use Snairbef\Laracloak\Contracts\Identity;
-use Snairbef\Laracloak\Models\User;
+use Snairbef\Laracloak\Contracts\UserResolver;
 
 final class Provider implements UserProvider
 {
     public function __construct(
         private readonly Identity $identity,
+        private readonly UserResolver $resolver,
     ) {}
 
     public function retrieveById(
@@ -24,18 +25,16 @@ final class Provider implements UserProvider
             return null;
         }
 
-        $subject = $attributes['sub'] ?? null;
+        $user = $this->resolver->resolve($attributes);
 
         if (
-            ! is_string($subject)
-            || $subject !== (string) $identifier
+            $user === null
+            || (string) $user->getAuthIdentifier() !== (string) $identifier
         ) {
             return null;
         }
 
-        return new User(
-            $attributes,
-        );
+        return $user;
     }
 
     public function retrieveByToken(

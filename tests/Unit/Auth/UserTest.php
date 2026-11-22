@@ -2,15 +2,18 @@
 
 use Snairbef\Laracloak\Models\User;
 
-it('uses sub as the authentication identifier', function () {
+it('uses the local primary key as the authentication identifier', function () {
     $user = new User([
+        'id' => 25,
         'sub' => 'subject-123',
         'name' => 'Febry',
     ]);
 
     expect($user->getAuthIdentifierName())
-        ->toBe('sub')
+        ->toBe('id')
         ->and($user->getAuthIdentifier())
+        ->toBe(25)
+        ->and($user->sub)
         ->toBe('subject-123');
 });
 

@@ -341,3 +341,14 @@ it('does not support remember authentication', function () {
     expect(guard()->viaRemember())
         ->toBeFalse();
 });
+
+it('does not treat password credentials as OIDC authentication', function () {
+    $guard = guard();
+
+    expect($guard->attempt(['email' => 'user@example.com', 'password' => 'secret']))
+        ->toBeFalse()
+        ->and($guard->validate(['email' => 'user@example.com', 'password' => 'secret']))
+        ->toBeFalse()
+        ->and($guard->once(['email' => 'user@example.com', 'password' => 'secret']))
+        ->toBeFalse();
+});

@@ -13,12 +13,18 @@ final class HttpException extends RuntimeException implements LaracloakException
 {
     private readonly int $statusCode;
 
+    private readonly ?string $errorCode;
+
     /**
      * HttpException constructor.
      */
     public function __construct(Response $response, ?Throwable $previous = null)
     {
         $this->statusCode = $response->status();
+        $error = $response->json('error');
+        $this->errorCode = is_string($error)
+            ? $error
+            : null;
 
         $message = "OIDC provider returned HTTP status {$this->statusCode}.";
 
@@ -33,11 +39,17 @@ final class HttpException extends RuntimeException implements LaracloakException
         return $this->statusCode;
     }
 
+    public function getErrorCode(): ?string
+    {
+        return $this->errorCode;
+    }
+
     /**
      * Determine whether the HTTP error indicates an invalid or revoked token.
      */
     public function unauthenticated(): bool
     {
-        return $this->statusCode === 401;
+        return $this->statusCode === 401
+            && $this->errorCode !== 'invalid_client';
     }
 }

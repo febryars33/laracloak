@@ -37,18 +37,11 @@ final class Token implements Contract
 
     public function refresh(string $refresh): array
     {
-        try {
-            $tokens = $this->send([
-                'grant_type' => 'refresh_token',
-                'refresh_token' => $refresh,
-                'client_id' => $this->id(),
-            ]);
-        } catch (HttpException $e) {
-            throw new AuthenticationException(
-                message: 'OIDC refresh token is invalid or revoked.',
-                previous: $e,
-            );
-        }
+        $tokens = $this->send([
+            'grant_type' => 'refresh_token',
+            'refresh_token' => $refresh,
+            'client_id' => $this->id(),
+        ]);
 
         $tokens['refresh_token'] ??= $refresh;
 
@@ -124,9 +117,13 @@ final class Token implements Contract
 
                     try {
                         $tokens = $this->refresh($refresh);
-                    } catch (AuthenticationException|HttpException $e) {
+                    } catch (HttpException $e) {
+                        if ($e->getErrorCode() !== 'invalid_grant') {
+                            throw $e;
+                        }
+
                         Log::info('Laracloak token refresh failed, clearing session.', [
-                            'reason' => $e->getMessage(),
+                            'reason' => 'invalid_grant',
                         ]);
                         $this->purge();
 
@@ -205,21 +202,37 @@ final class Token implements Contract
 
     private function send(array $data): array
     {
-        if (
-            config('laracloak.authentication.method')
-            === 'client_secret_post'
-        ) {
+        $method = config(
+            'laracloak.authentication.method',
+            'client_secret_post',
+        );
+        $headers = [];
+
+        if ($method === 'client_secret_post') {
             $data['client_secret'] = $this->secret();
+        } elseif ($method === 'client_secret_basic') {
+            $headers['Authorization'] = 'Basic '.base64_encode(
+                urlencode($this->id()).':'.urlencode($this->secret()),
+            );
+        } else {
+            throw new ConfigurationException('Unsupported OIDC token endpoint authentication method.');
         }
 
         $response = $this->client->post(
             $this->discovery->get('token_endpoint'),
             $data,
+            $headers,
         );
 
         $tokens = $response->json();
 
-        if (! is_array($tokens)) {
+        if (
+            ! is_array($tokens)
+            || ! is_string($tokens['access_token'] ?? null)
+            || trim($tokens['access_token']) === ''
+            || ! is_string($tokens['token_type'] ?? null)
+            || strcasecmp($tokens['token_type'], 'Bearer') !== 0
+        ) {
             throw new AuthenticationException('Invalid OIDC token response.');
         }
 
