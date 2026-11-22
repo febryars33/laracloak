@@ -10,8 +10,6 @@ final class State implements Contract
 {
     public function generate(): string
     {
-        return bin2hex(
-            random_bytes(32),
-        );
+        return bin2hex(random_bytes(32));
     }
 }
